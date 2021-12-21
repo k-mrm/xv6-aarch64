@@ -1,10 +1,10 @@
 // which hart (core) is this?
 static inline uint64
-r_mhartid()
+cpuid()
 {
   uint64 x;
-  asm volatile("csrr %0, mhartid" : "=r" (x) );
-  return x;
+  asm volatile("mrs %0, mpidr_el1" : "=r" (x) );
+  return x & 0xff;
 }
 
 // Machine Status Register, mstatus
@@ -269,26 +269,33 @@ r_time()
   return x;
 }
 
-// enable device interrupts
+// enable device interrupts(irq)
 static inline void
 intr_on()
 {
-  w_sstatus(r_sstatus() | SSTATUS_SIE);
+  asm volatile("msr daifclr, #0x2" ::: "memory");
 }
 
-// disable device interrupts
+// disable device interrupts(irq)
 static inline void
 intr_off()
 {
-  w_sstatus(r_sstatus() & ~SSTATUS_SIE);
+  asm volatile("msr daifset, #0x2" ::: "memory");
+}
+
+static inline uint64
+daif() {
+  uint64 d;
+  asm volatile("mrs %0, daif" : "=r" (d));
+  return d;
 }
 
 // are device interrupts enabled?
 static inline int
 intr_get()
 {
-  uint64 x = r_sstatus();
-  return (x & SSTATUS_SIE) != 0;
+  uint64 x = daif();
+  return (x & 0x2) != 0;
 }
 
 static inline uint64
@@ -325,12 +332,32 @@ r_ra()
 
 // flush the TLB.
 static inline void
-sfence_vma()
-{
-  // the zero, zero means flush all TLB entries.
-  asm volatile("sfence.vma zero, zero");
+isb() {
+  asm volatile("isb");
 }
 
+static inline void
+dsb() {
+  asm volatile("dsb sy");
+}
+
+static inline void
+dsb_ish() {
+  asm volatile("dsb ish");
+}
+
+static inline void
+tlbi_vmalle1is() {
+  asm volatile("tlbi vmalle1is");
+}
+
+static inline void
+flush_tlb() {
+  dsb_ish();
+  tlbi_vmalle1is();
+  dsb_ish();
+  isb();
+}
 
 #define PGSIZE 4096 // bytes per page
 #define PGSHIFT 12  // bits of offset within a page

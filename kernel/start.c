@@ -1,7 +1,7 @@
 #include "types.h"
 #include "param.h"
 #include "memlayout.h"
-#include "riscv.h"
+#include "aarch64.h"
 #include "defs.h"
 
 void main();
@@ -62,7 +62,7 @@ void
 timerinit()
 {
   // each CPU has a separate source of timer interrupts.
-  int id = r_mhartid();
+  int id = cpuid();
 
   // ask the CLINT for a timer interrupt.
   int interval = 1000000; // cycles; about 1/10th second in qemu.

@@ -1,21 +1,32 @@
 // Saved registers for kernel context switches.
 struct context {
-  uint64 ra;
   uint64 sp;
 
-  // callee-saved
-  uint64 s0;
-  uint64 s1;
-  uint64 s2;
-  uint64 s3;
-  uint64 s4;
-  uint64 s5;
-  uint64 s6;
-  uint64 s7;
-  uint64 s8;
-  uint64 s9;
-  uint64 s10;
-  uint64 s11;
+  /* callee register */
+  uint64 x0;
+  uint64 x1;
+  uint64 x2;
+  uint64 x3;
+  uint64 x4;
+  uint64 x5;
+  uint64 x6;
+  uint64 x7;
+  uint64 x8;
+  uint64 x16;
+  uint64 x17;
+  uint64 x18;
+  uint64 x19;
+  uint64 x20;
+  uint64 x21;
+  uint64 x22;
+  uint64 x23;
+  uint64 x24;
+  uint64 x25;
+  uint64 x26;
+  uint64 x27;
+  uint64 x28;
+  uint64 x29;
+  uint64 x30;
 };
 
 // Per-CPU state.
@@ -79,6 +90,44 @@ struct trapframe {
   /* 272 */ uint64 t5;
   /* 280 */ uint64 t6;
 };
+
+struct trapframe {
+  uint64 x0;
+  uint64 x1;
+  uint64 x2;
+  uint64 x3;
+  uint64 x4;
+  uint64 x5;
+  uint64 x6;
+  uint64 x7;
+  uint64 x8;
+  uint64 x9;
+  uint64 x10;
+  uint64 x11;
+  uint64 x12;
+  uint64 x13;
+  uint64 x14;
+  uint64 x15;
+  uint64 x16;
+  uint64 x17;
+  uint64 x18;
+  uint64 x19;
+  uint64 x20;
+  uint64 x21;
+  uint64 x22;
+  uint64 x23;
+  uint64 x24;
+  uint64 x25;
+  uint64 x26;
+  uint64 x27;
+  uint64 x28;
+  uint64 x29;
+  uint64 x30;
+  uint64 elr;        // saved user program counter
+  uint64 spsr;
+  uint64 kernel_sp;  // top of process's kernel stack
+};
+
 
 enum procstate { UNUSED, USED, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 

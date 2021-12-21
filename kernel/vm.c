@@ -2,7 +2,7 @@
 #include "types.h"
 #include "memlayout.h"
 #include "elf.h"
-#include "riscv.h"
+#include "aarch64.h"
 #include "defs.h"
 #include "fs.h"
 

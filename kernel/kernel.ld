@@ -1,13 +1,13 @@
-OUTPUT_ARCH( "riscv" )
+OUTPUT_ARCH( "aarch64" )
 ENTRY( _entry )
 
 SECTIONS
 {
   /*
-   * ensure that entry.S / _entry is at 0x80000000,
+   * ensure that entry.S / _entry is at 0x40000000,
    * where qemu's -kernel jumps.
    */
-  . = 0x80000000;
+  . = 0x40000000;
 
   .text : {
     *(.text .text.*)

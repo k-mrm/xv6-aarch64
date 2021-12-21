@@ -1,7 +1,7 @@
 #include "types.h"
 #include "param.h"
 #include "memlayout.h"
-#include "riscv.h"
+#include "aarch64.h"
 #include "spinlock.h"
 #include "proc.h"
 #include "defs.h"
@@ -54,16 +54,6 @@ procinit(void)
       initlock(&p->lock, "proc");
       p->kstack = KSTACK((int) (p - proc));
   }
-}
-
-// Must be called with interrupts disabled,
-// to prevent race with process being moved
-// to a different CPU.
-int
-cpuid()
-{
-  int id = r_tp();
-  return id;
 }
 
 // Return this CPU's cpu struct.
@@ -138,7 +128,7 @@ found:
   // Set up new context to start executing at forkret,
   // which returns to user space.
   memset(&p->context, 0, sizeof(p->context));
-  p->context.ra = (uint64)forkret;
+  p->context.x30 = (uint64)forkret;
   p->context.sp = p->kstack + PGSIZE;
 
   return p;

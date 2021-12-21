@@ -7,7 +7,7 @@
 //
 
 #include "types.h"
-#include "riscv.h"
+#include "aarch64.h"
 #include "defs.h"
 #include "param.h"
 #include "memlayout.h"
