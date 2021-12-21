@@ -332,27 +332,32 @@ r_ra()
 
 // flush the TLB.
 static inline void
-isb() {
+isb()
+{
   asm volatile("isb");
 }
 
 static inline void
-dsb() {
+dsb()
+{
   asm volatile("dsb sy");
 }
 
 static inline void
-dsb_ish() {
+dsb_ish()
+{
   asm volatile("dsb ish");
 }
 
 static inline void
-tlbi_vmalle1is() {
+tlbi_vmalle1is()
+{
   asm volatile("tlbi vmalle1is");
 }
 
 static inline void
-flush_tlb() {
+flush_tlb()
+{
   dsb_ish();
   tlbi_vmalle1is();
   dsb_ish();
