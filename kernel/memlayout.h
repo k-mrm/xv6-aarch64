@@ -18,11 +18,11 @@
 
 // qemu puts UART registers here in physical memory.
 #define UART0 0x09000000L
-#define UART0_IRQ 10
+#define UART0_IRQ 33
 
 // virtio mmio interface
 #define VIRTIO0  0x0a000000L
-#define VIRTIO0_IRQ 1
+#define VIRTIO0_IRQ  48
 
 // interrupt controller GICv2
 #define GICV2 0x08000000L

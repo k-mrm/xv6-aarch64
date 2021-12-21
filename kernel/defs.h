@@ -82,7 +82,6 @@ void            panic(char*) __attribute__((noreturn));
 void            printfinit(void);
 
 // proc.c
-int             cpuid(void);
 void            exit(int);
 int             fork(void);
 int             growproc(int);
@@ -171,11 +170,8 @@ int             copyout(pagetable_t, uint64, char *, uint64);
 int             copyin(pagetable_t, char *, uint64, uint64);
 int             copyinstr(pagetable_t, char *, uint64, uint64);
 
-// plic.c
-void            plicinit(void);
-void            plicinithart(void);
-int             plic_claim(void);
-void            plic_complete(int);
+// gicv2.c
+void            gicv2init(void);
 
 // virtio_disk.c
 void            virtio_disk_init(void);
