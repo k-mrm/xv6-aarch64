@@ -10,13 +10,14 @@ _entry:
         // with a 4096-byte stack per CPU.
         // sp = stack0 + (cpuid * 4096)
         // cpuid = mpidr_el1 & 0xff
-        ldr sp, stack0
-        mov x0, #1024*4
-        msr x1, mpidr_el1
-        and x1, x1, #0xff
-        add x1, x1, #1
-        mul x0, x0, x1
-        add sp, sp, x0
+        ldr x0, =stack0
+        mov x1, #1024*4
+        mrs x2, mpidr_el1
+        and x2, x2, #0xff
+        add x2, x2, #1
+        mul x1, x1, x2
+        add x0, x0, x1
+        mov sp, x0
         // jump to start() in start.c
         b start
 spin:
