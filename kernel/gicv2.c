@@ -33,16 +33,20 @@
 #define C_AIAR  0x20
 #define C_AEOIR 0x24
 
-void
+static void gic_setup_ppi(uint32 intid);
+static void gic_setup_spi(uint32 intid);
+
+static void
 giccinit()
 {
-  ;
+  *RegC(C_CTLR) = 0;
+  *RegC(C_PMR) = 0xff;
 }
 
-void
+static void
 gicdinit()
 {
-  ;
+  *RegD(D_CTLR) = 0;
 }
 
 void
@@ -50,4 +54,80 @@ gicv2init()
 {
   giccinit();
   gicdinit();
+
+  // gic_setup_ppi(TIMER_IRQ);
+  gic_setup_spi(UART0_IRQ);
+  gic_setup_spi(VIRTIO0_IRQ);
+
+  *RegC(C_CTLR) |= 0x1;
+  *RegD(D_CTLR) |= 0x1;
+}
+
+static void
+gic_enable_int(uint32 intid)
+{
+  *RegD(D_ISENABLER(intid / 32)) |= 1 << (intid % 32);
+}
+
+static void
+gic_disable_int(uint32 intid)
+{
+  *RegD(D_ICENABLER(intid / 32)) |= 1 << (intid % 32);
+}
+
+static void
+gic_set_pending(uint32 intid)
+{
+  *RegD(D_ISPENDR(intid / 32)) |= 1 << (intid % 32);
+}
+
+static void
+gic_clear_pending(uint32 intid)
+{
+  *RegD(D_ICPENDR(intid / 32)) |= 1 << (intid % 32);
+}
+
+static void
+gic_set_prio0(uint32 intid)
+{
+  // set priority to 0
+  *RegD(D_IPRIORITYR(intid / 4)) &= ~((uint32)0xff << (intid % 4 * 8));
+}
+
+static void
+gic_set_target(uint32 intid, uint32 cpuid)
+{
+  uint32 i = *RegD(D_ITARGETSR(intid / 4));
+  i &= ~((uint32)0xff << (intid % 4 * 8));
+  *RegD(D_ITARGETSR(intid / 4)) = i | ((uint32)(1 << cpuid) << (intid % 4 * 8));
+}
+
+static void
+gic_setup_ppi(uint32 intid)
+{
+  gic_set_prio0(intid);
+  gic_clear_pending(intid);
+  gic_enable_int(intid);
+}
+
+static void
+gic_setup_spi(uint32 intid)
+{
+  gic_set_prio0(intid);
+
+  // all interrupts are handled by cpu0　
+  gic_set_target(intid, 0);
+
+  gic_clear_pending(intid);
+  gic_enable_int(intid);
+}
+
+void gic_eoi(uint32 iar)
+{
+  *RegC(C_EOIR) = iar;
+}
+
+uint32 gic_iar()
+{
+  return *RegC(C_IAR);
 }
