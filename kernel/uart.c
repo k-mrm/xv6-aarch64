@@ -1,5 +1,5 @@
 //
-// low-level driver routines for 16550a UART.
+// low-level driver routines for pl011 UART.
 //
 
 #include "types.h"
@@ -13,27 +13,26 @@
 // the UART control registers are memory-mapped
 // at address UART0. this macro returns the
 // address of one of the registers.
-#define Reg(reg) ((volatile unsigned char *)(UART0 + reg))
+#define Reg(reg) ((volatile uint32 *)(UART0 + reg))
 
 // the UART control registers.
-// some have different meanings for
-// read vs write.
-// see http://byterunner.com/16550.html
-#define RHR 0                 // receive holding register (for input bytes)
-#define THR 0                 // transmit holding register (for output bytes)
-#define IER 1                 // interrupt enable register
-#define IER_RX_ENABLE (1<<0)
-#define IER_TX_ENABLE (1<<1)
-#define FCR 2                 // FIFO control register
-#define FCR_FIFO_ENABLE (1<<0)
-#define FCR_FIFO_CLEAR (3<<1) // clear the content of the two FIFOs
-#define ISR 2                 // interrupt status register
-#define LCR 3                 // line control register
-#define LCR_EIGHT_BITS (3<<0)
-#define LCR_BAUD_LATCH (1<<7) // special mode to set baud rate
-#define LSR 5                 // line status register
-#define LSR_RX_READY (1<<0)   // input is waiting to be read from RHR
-#define LSR_TX_IDLE (1<<5)    // THR can accept another character to send
+// pl011
+#define DR  0x00
+#define FR  0x18
+#define FR_RXFE (1<<4)  /* recieve fifo empty */
+#define FR_TXFF (1<<5)  /* transmit fifo full */
+#define FR_RXFF (1<<6)  /* recieve fifo full */
+#define FR_TXFE (1<<7)  /* transmit fifo empty */
+#define IBRD  0x24
+#define FBRD  0x28
+#define LCRH  0x2c
+#define LCRH_FEN  (1<<4)
+#define LCRH_WLEN_8BIT  (3<<5)
+#define CR    0x30
+#define IMSC  0x38
+#define IMSC_RX_ENABLE (1<<4)
+#define IMSC_TX_ENABLE (1<<5)
+#define ICR   0x44
 
 #define ReadReg(reg) (*(Reg(reg)))
 #define WriteReg(reg, v) (*(Reg(reg)) = (v))
@@ -52,27 +51,23 @@ void uartstart();
 void
 uartinit(void)
 {
+  // disable uart
+  WriteReg(CR, 0);
+
   // disable interrupts.
-  WriteReg(IER, 0x00);
+  WriteReg(IMSC, 0);
 
-  // special mode to set baud rate.
-  WriteReg(LCR, LCR_BAUD_LATCH);
+  // in qemu, it is not necessary to set baudrate.
 
-  // LSB for baud rate of 38.4K.
-  WriteReg(0, 0x03);
+  // enable FIFOs.
+  // set word length to 8 bits, no parity.
+  WriteReg(LCRH, LCRH_FEN | LCRH_WLEN_8BIT);
 
-  // MSB for baud rate of 38.4K.
-  WriteReg(1, 0x00);
-
-  // leave set-baud mode,
-  // and set word length to 8 bits, no parity.
-  WriteReg(LCR, LCR_EIGHT_BITS);
-
-  // reset and enable FIFOs.
-  WriteReg(FCR, FCR_FIFO_ENABLE | FCR_FIFO_CLEAR);
+  // enable RXE, TXE and enable uart.
+  WriteReg(CR, 0x301);
 
   // enable transmit and receive interrupts.
-  WriteReg(IER, IER_TX_ENABLE | IER_RX_ENABLE);
+  WriteReg(IMSC, IMSC_RX_ENABLE | IMSC_TX_ENABLE);
 
   initlock(&uart_tx_lock, "uart");
 }
@@ -122,10 +117,10 @@ uartputc_sync(int c)
       ;
   }
 
-  // wait for Transmit Holding Empty to be set in LSR.
-  while((ReadReg(LSR) & LSR_TX_IDLE) == 0)
+  // wait for ... TODO: comment */
+  while(ReadReg(FR) & FR_TXFF)
     ;
-  WriteReg(THR, c);
+  WriteReg(DR, c);
 
   pop_off();
 }
@@ -156,7 +151,7 @@ uartstart()
     // maybe uartputc() is waiting for space in the buffer.
     wakeup(&uart_tx_r);
     
-    WriteReg(THR, c);
+    WriteReg(DR, c);
   }
 }
 
@@ -165,12 +160,10 @@ uartstart()
 int
 uartgetc(void)
 {
-  if(ReadReg(LSR) & 0x01){
-    // input data is ready.
-    return ReadReg(RHR);
-  } else {
+  if(ReadReg(FR) & FR_RXFE)
     return -1;
-  }
+  else
+    return ReadReg(DR);
 }
 
 // handle a uart interrupt, raised because input has
