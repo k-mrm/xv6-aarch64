@@ -19,10 +19,10 @@
 // pl011
 #define DR  0x00
 #define FR  0x18
-#define FR_RXFE (1<<4)  /* recieve fifo empty */
-#define FR_TXFF (1<<5)  /* transmit fifo full */
-#define FR_RXFF (1<<6)  /* recieve fifo full */
-#define FR_TXFE (1<<7)  /* transmit fifo empty */
+#define FR_RXFE (1<<4)  // recieve fifo empty
+#define FR_TXFF (1<<5)  // transmit fifo full
+#define FR_RXFF (1<<6)  // recieve fifo full
+#define FR_TXFE (1<<7)  // transmit fifo empty
 #define IBRD  0x24
 #define FBRD  0x28
 #define LCRH  0x2c
@@ -138,7 +138,7 @@ uartstart()
       return;
     }
     
-    if((ReadReg(LSR) & LSR_TX_IDLE) == 0){
+    if((ReadReg(FR) & FR_TXFF) == 0){
       // the UART transmit holding register is full,
       // so we cannot give it another byte.
       // it will interrupt when it's ready for a new byte.
