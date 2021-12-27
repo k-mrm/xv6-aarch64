@@ -172,6 +172,7 @@ int             copyinstr(pagetable_t, char *, uint64, uint64);
 
 // gicv2.c
 void            gicv2init(void);
+void            gicv2inithart(void);
 
 // virtio_disk.c
 void            virtio_disk_init(void);

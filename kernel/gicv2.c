@@ -126,6 +126,14 @@ gic_setup_spi(uint32 intid)
   gic_enable_int(intid);
 }
 
+// irq from iar
+int
+gic_iar_irq(uint32 iar)
+{
+  return iar & 0x3ff;
+}
+
+// interrupt acknowledge register:
 // ask GIC what interrupt we should serve.
 uint32
 gic_iar()
