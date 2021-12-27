@@ -52,12 +52,16 @@ gicdinit()
 void
 gicv2init()
 {
-  giccinit();
-  gicdinit();
-
   // gic_setup_ppi(TIMER_IRQ);
   gic_setup_spi(UART0_IRQ);
   gic_setup_spi(VIRTIO0_IRQ);
+}
+
+void
+gicv2inithart()
+{
+  giccinit();
+  gicdinit();
 
   *RegC(C_CTLR) |= 0x1;
   *RegD(D_CTLR) |= 0x1;
@@ -122,12 +126,17 @@ gic_setup_spi(uint32 intid)
   gic_enable_int(intid);
 }
 
-void gic_eoi(uint32 iar)
+// ask GIC what interrupt we should serve.
+uint32
+gic_iar()
+{
+  return *RegC(C_IAR);
+}
+
+// tell GIC we've served this IRQ.
+void
+gic_eoi(uint32 iar)
 {
   *RegC(C_EOIR) = iar;
 }
 
-uint32 gic_iar()
-{
-  return *RegC(C_IAR);
-}
