@@ -1,4 +1,4 @@
-// which hart (core) is this?
+// which core is this?
 static inline uint64
 cpuid()
 {
@@ -302,31 +302,15 @@ static inline uint64
 r_sp()
 {
   uint64 x;
-  asm volatile("mv %0, sp" : "=r" (x) );
+  asm volatile("mov %0, sp" : "=r" (x) );
   return x;
-}
-
-// read and write tp, the thread pointer, which holds
-// this core's hartid (core number), the index into cpus[].
-static inline uint64
-r_tp()
-{
-  uint64 x;
-  asm volatile("mv %0, tp" : "=r" (x) );
-  return x;
-}
-
-static inline void 
-w_tp(uint64 x)
-{
-  asm volatile("mv tp, %0" : : "r" (x));
 }
 
 static inline uint64
 r_ra()
 {
   uint64 x;
-  asm volatile("mv %0, ra" : "=r" (x) );
+  asm volatile("mov %0, x30" : "=r" (x) );
   return x;
 }
 

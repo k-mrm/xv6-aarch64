@@ -31,6 +31,7 @@ start()
 void
 timerinit()
 {
+  /*
   // each CPU has a separate source of timer interrupts.
   int id = cpuid();
 
@@ -55,4 +56,5 @@ timerinit()
 
   // enable machine-mode timer interrupts.
   w_mie(r_mie() | MIE_MTIE);
+  */
 }

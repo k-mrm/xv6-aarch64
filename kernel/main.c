@@ -23,6 +23,7 @@ main()
     trapinit();      // trap vectors
     trapinithart();  // install kernel trap vector
     gicv2init();     // set up interrupt controller
+    gicv2inithart();
     binit();         // buffer cache
     iinit();         // inode table
     fileinit();      // file table
@@ -37,8 +38,8 @@ main()
     printf("hart %d starting\n", cpuid());
     kvminithart();    // turn on paging
     trapinithart();   // install kernel trap vector
-    plicinithart();   // ask PLIC for device interrupts
+    gicv2inithart();
   }
 
-  scheduler();        
+  scheduler();
 }
