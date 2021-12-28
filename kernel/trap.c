@@ -11,8 +11,8 @@ uint ticks;
 
 extern char trampoline[], uservec[], userret[];
 
-// in kernelvec.S, calls kerneltrap().
-void kernelvec();
+// in trapvec.S, calls kerneltrap() or usertrap().
+void trapvec();
 
 extern int devintr();
 
@@ -26,7 +26,7 @@ trapinit(void)
 void
 trapinithart(void)
 {
-  w_stvec((uint64)kernelvec);
+  w_vbar_el1((uint64)trapvec);
 }
 
 //
@@ -41,10 +41,6 @@ usertrap(void)
   if((r_sstatus() & SSTATUS_SPP) != 0)
     panic("usertrap: not from user mode");
 
-  // send interrupts and exceptions to kerneltrap(),
-  // since we're now in the kernel.
-  w_stvec((uint64)kernelvec);
-
   struct proc *p = myproc();
   
   // save user program counter.
@@ -55,10 +51,6 @@ usertrap(void)
 
     if(p->killed)
       exit(-1);
-
-    // sepc points to the ecall instruction,
-    // but we want to return to the next instruction.
-    p->trapframe->epc += 4;
 
     // an interrupt will change sstatus &c registers,
     // so don't enable until done with those registers.
@@ -183,7 +175,8 @@ devintr()
     // this is a supervisor external interrupt, via PLIC.
 
     // irq indicates which device interrupted.
-    int irq = plic_claim();
+    uint32 iar = gic_iar();
+    int irq = gic_iar_irq(iar);
 
     if(irq == UART0_IRQ){
       uartintr();
@@ -196,8 +189,8 @@ devintr()
     // the PLIC allows each device to raise at most one
     // interrupt at a time; tell the PLIC the device is
     // now allowed to interrupt again.
-    if(irq)
-      plic_complete(irq);
+    if(iar)
+      gic_eoi(iar);
 
     return 1;
   } else if(scause == 0x8000000000000001L){
