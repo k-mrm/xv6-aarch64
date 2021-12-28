@@ -6,7 +6,7 @@
 
 volatile static int started = 0;
 
-// start() jumps here in supervisor mode on all CPUs.
+// start() jumps here in EL1 on all CPUs.
 void
 main()
 {
@@ -21,7 +21,7 @@ main()
     kvminithart();   // turn on paging
     procinit();      // process table
     trapinit();      // trap vectors
-    trapinithart();  // install kernel trap vector
+    trapinithart();  // install trap vector
     gicv2init();     // set up interrupt controller
     gicv2inithart();
     binit();         // buffer cache
@@ -37,7 +37,7 @@ main()
     __sync_synchronize();
     printf("hart %d starting\n", cpuid());
     kvminithart();    // turn on paging
-    trapinithart();   // install kernel trap vector
+    trapinithart();   // install trap vector
     gicv2inithart();
   }
 
