@@ -26,8 +26,8 @@ OBJS = \
   $K/pipe.o \
   $K/exec.o \
   $K/sysfile.o \
-  $K/kernelvec.o \
-  $K/plic.o \
+  $K/trapvec.o \
+  $K/timer.o \
   $K/virtio_disk.o
 
 # Try to infer the correct TOOLPREFIX if not set
