@@ -38,7 +38,7 @@ proc_mapstacks(pagetable_t kpgtbl) {
     if(pa == 0)
       panic("kalloc");
     uint64 va = KSTACK((int) (p - proc));
-    kvmmap(kpgtbl, va, (uint64)pa, PGSIZE, PTE_R | PTE_W);
+    kvmmap(kpgtbl, va, (uint64)pa, PGSIZE, PTE_NORMAL);
   }
 }
 
@@ -173,14 +173,14 @@ proc_pagetable(struct proc *p)
   // only the supervisor uses it, on the way
   // to/from user space, so not PTE_U.
   if(mappages(pagetable, TRAMPOLINE, PGSIZE,
-              (uint64)trampoline, PTE_R | PTE_X) < 0){
+              (uint64)trampoline, PTE_NORMAL) < 0){
     uvmfree(pagetable, 0);
     return 0;
   }
 
   // map the trapframe just below TRAMPOLINE, for trampoline.S.
   if(mappages(pagetable, TRAPFRAME, PGSIZE,
-              (uint64)(p->trapframe), PTE_R | PTE_W) < 0){
+              (uint64)(p->trapframe), PTE_NORMAL) < 0){
     uvmunmap(pagetable, TRAMPOLINE, 1, 0);
     uvmfree(pagetable, 0);
     return 0;
@@ -226,7 +226,7 @@ userinit(void)
   p->sz = PGSIZE;
 
   // prepare for the very first "return" from kernel to user.
-  p->trapframe->epc = 0;      // user program counter
+  p->trapframe->elr = 0;      // user program counter
   p->trapframe->sp = PGSIZE;  // user stack pointer
 
   safestrcpy(p->name, "initcode", sizeof(p->name));
@@ -283,7 +283,7 @@ fork(void)
   *(np->trapframe) = *(p->trapframe);
 
   // Cause fork to return 0 in the child.
-  np->trapframe->a0 = 0;
+  np->trapframe->x0 = 0;
 
   // increment reference counts on open file descriptors.
   for(i = 0; i < NOFILE; i++)
