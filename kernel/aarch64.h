@@ -128,63 +128,19 @@ r_sepc()
   return x;
 }
 
-// Machine Exception Delegation
-static inline uint64
-r_medeleg()
-{
-  uint64 x;
-  asm volatile("csrr %0, medeleg" : "=r" (x) );
-  return x;
-}
-
-static inline void 
-w_medeleg(uint64 x)
-{
-  asm volatile("csrw medeleg, %0" : : "r" (x));
-}
-
-// Machine Interrupt Delegation
-static inline uint64
-r_mideleg()
-{
-  uint64 x;
-  asm volatile("csrr %0, mideleg" : "=r" (x) );
-  return x;
-}
-
-static inline void 
-w_mideleg(uint64 x)
-{
-  asm volatile("csrw mideleg, %0" : : "r" (x));
-}
-
-// Supervisor Trap-Vector Base Address
-// low two bits are mode.
-static inline void 
-w_stvec(uint64 x)
-{
-  asm volatile("csrw stvec, %0" : : "r" (x));
-}
-
-static inline uint64
-r_stvec()
-{
-  uint64 x;
-  asm volatile("csrr %0, stvec" : "=r" (x) );
-  return x;
-}
-
-// Machine-mode interrupt vector
-static inline void 
-w_mtvec(uint64 x)
-{
-  asm volatile("csrw mtvec, %0" : : "r" (x));
-}
-
+// Vector Base Address Register in EL1
 static inline void
-w_pmpcfg0(uint64 x)
+w_vbar_el1(uint64 x)
 {
-  asm volatile("csrw pmpcfg0, %0" : : "r" (x));
+  asm volatile("msr vbar_el1, %0" : : "r" (x));
+}
+
+static inline uint64
+r_vbar_el1()
+{
+  uint64 x;
+  asm volatile("mrs %0, vbar_el1" : "=r" (x) );
+  return x;
 }
 
 static inline void
@@ -193,24 +149,34 @@ w_pmpaddr0(uint64 x)
   asm volatile("csrw pmpaddr0, %0" : : "r" (x));
 }
 
-// use riscv's sv39 page table scheme.
-#define SATP_SV39 (8L << 60)
-
-#define MAKE_SATP(pagetable) (SATP_SV39 | (((uint64)pagetable) >> 12))
-
+// TODO: fix comment
 // supervisor address translation and protection;
 // holds the address of the page table.
-static inline void 
-w_satp(uint64 x)
+static inline void
+w_ttbr0_el1(uint64 x)
 {
-  asm volatile("csrw satp, %0" : : "r" (x));
+  asm volatile("msr ttbr0_el1, %0" : : "r" (x));
 }
 
 static inline uint64
-r_satp()
+r_ttbr0_el1(void)
 {
   uint64 x;
-  asm volatile("csrr %0, satp" : "=r" (x) );
+  asm volatile("mrs %0, ttbr0_el1" : "=r" (x) );
+  return x;
+}
+
+static inline void
+w_ttbr1_el1(uint64 x)
+{
+  asm volatile("msr ttbr1_el1, %0" : : "r" (x));
+}
+
+static inline uint64
+r_ttbr1_el1(void)
+{
+  uint64 x;
+  asm volatile("mrs %0, ttbr1_el1" : "=r" (x) );
   return x;
 }
 
@@ -245,27 +211,47 @@ r_stval()
   return x;
 }
 
-// Machine-mode Counter-Enable
-static inline void 
-w_mcounteren(uint64 x)
-{
-  asm volatile("csrw mcounteren, %0" : : "r" (x));
-}
-
+// armv8 generic timer
 static inline uint64
-r_mcounteren()
+r_cntv_ctl_el0()
 {
   uint64 x;
-  asm volatile("csrr %0, mcounteren" : "=r" (x) );
+  asm volatile("mrs %0, cntv_ctl_el0" : "=r"(c) );
   return x;
 }
 
-// machine-mode cycle counter
+static inline void
+w_cntv_ctl_el0(uint64 x)
+{
+  asm volatile("msr cntv_ctl_el0, %0" : : "r"(x) );
+}
+
 static inline uint64
-r_time()
+r_cntv_cval_el0()
 {
   uint64 x;
-  asm volatile("csrr %0, time" : "=r" (x) );
+  asm volatile("mrs %0, cntv_cval_el0" : "=r"(x) );
+  return x;
+}
+
+static inline void
+w_cntv_cval_el0(uint64 x) {
+  asm volatile("msr cntv_cval_el0, %0" : : "r"(x) );
+}
+
+static inline uint64
+r_cntvct_el0()
+{
+  uint64 x;
+  asm volatile("mrs %0, cntvct_el0" : "=r"(x) );
+  return x;
+}
+
+static inline uint64
+r_cntfrq_el0()
+{
+  uint64 x;
+  asm volatile("mrs %0, cntfrq_el0" : "=r"(x) );
   return x;
 }
 
@@ -290,7 +276,7 @@ daif() {
   return d;
 }
 
-// are device interrupts enabled?
+// are device interrupts(irq) enabled?
 static inline int
 intr_get()
 {
@@ -314,7 +300,6 @@ r_ra()
   return x;
 }
 
-// flush the TLB.
 static inline void
 isb()
 {
@@ -327,24 +312,13 @@ dsb()
   asm volatile("dsb sy");
 }
 
-static inline void
-dsb_ish()
-{
-  asm volatile("dsb ish");
-}
-
-static inline void
-tlbi_vmalle1is()
-{
-  asm volatile("tlbi vmalle1is");
-}
-
+// flush the TLB.
 static inline void
 flush_tlb()
 {
-  dsb_ish();
-  tlbi_vmalle1is();
-  dsb_ish();
+  asm volatile("dsb ishst");
+  asm volatile("tlbi vmalle1is");
+  asm volatile("dsb ish");
   isb();
 }
 
@@ -354,11 +328,13 @@ flush_tlb()
 #define PGROUNDUP(sz)  (((sz)+PGSIZE-1) & ~(PGSIZE-1))
 #define PGROUNDDOWN(a) (((a)) & ~(PGSIZE-1))
 
-#define PTE_V (1L << 0) // valid
+#define PTE_V (3L << 0) // valid
 #define PTE_R (1L << 1)
 #define PTE_W (1L << 2)
 #define PTE_X (1L << 3)
 #define PTE_U (1L << 4) // 1 -> user can access
+#define PTE_PXN (1UL << 53)   // privileged XN
+#define PTE_UXN (1UL << 54)   // user XN
 
 // shift a physical address to the right place for a PTE.
 #define PA2PTE(pa) ((((uint64)pa) >> 12) << 10)
