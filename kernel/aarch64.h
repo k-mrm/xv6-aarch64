@@ -216,7 +216,7 @@ static inline uint64
 r_cntv_ctl_el0()
 {
   uint64 x;
-  asm volatile("mrs %0, cntv_ctl_el0" : "=r"(c) );
+  asm volatile("mrs %0, cntv_ctl_el0" : "=r"(x) );
   return x;
 }
 
