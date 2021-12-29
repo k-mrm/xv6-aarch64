@@ -7,127 +7,6 @@ cpuid()
   return x & 0xff;
 }
 
-// Machine Status Register, mstatus
-
-#define MSTATUS_MPP_MASK (3L << 11) // previous mode.
-#define MSTATUS_MPP_M (3L << 11)
-#define MSTATUS_MPP_S (1L << 11)
-#define MSTATUS_MPP_U (0L << 11)
-#define MSTATUS_MIE (1L << 3)    // machine-mode interrupt enable.
-
-static inline uint64
-r_mstatus()
-{
-  uint64 x;
-  asm volatile("csrr %0, mstatus" : "=r" (x) );
-  return x;
-}
-
-static inline void 
-w_mstatus(uint64 x)
-{
-  asm volatile("csrw mstatus, %0" : : "r" (x));
-}
-
-// machine exception program counter, holds the
-// instruction address to which a return from
-// exception will go.
-static inline void 
-w_mepc(uint64 x)
-{
-  asm volatile("csrw mepc, %0" : : "r" (x));
-}
-
-// Supervisor Status Register, sstatus
-
-#define SSTATUS_SPP (1L << 8)  // Previous mode, 1=Supervisor, 0=User
-#define SSTATUS_SPIE (1L << 5) // Supervisor Previous Interrupt Enable
-#define SSTATUS_UPIE (1L << 4) // User Previous Interrupt Enable
-#define SSTATUS_SIE (1L << 1)  // Supervisor Interrupt Enable
-#define SSTATUS_UIE (1L << 0)  // User Interrupt Enable
-
-static inline uint64
-r_sstatus()
-{
-  uint64 x;
-  asm volatile("csrr %0, sstatus" : "=r" (x) );
-  return x;
-}
-
-static inline void 
-w_sstatus(uint64 x)
-{
-  asm volatile("csrw sstatus, %0" : : "r" (x));
-}
-
-// Supervisor Interrupt Pending
-static inline uint64
-r_sip()
-{
-  uint64 x;
-  asm volatile("csrr %0, sip" : "=r" (x) );
-  return x;
-}
-
-static inline void 
-w_sip(uint64 x)
-{
-  asm volatile("csrw sip, %0" : : "r" (x));
-}
-
-// Supervisor Interrupt Enable
-#define SIE_SEIE (1L << 9) // external
-#define SIE_STIE (1L << 5) // timer
-#define SIE_SSIE (1L << 1) // software
-static inline uint64
-r_sie()
-{
-  uint64 x;
-  asm volatile("csrr %0, sie" : "=r" (x) );
-  return x;
-}
-
-static inline void 
-w_sie(uint64 x)
-{
-  asm volatile("csrw sie, %0" : : "r" (x));
-}
-
-// Machine-mode Interrupt Enable
-#define MIE_MEIE (1L << 11) // external
-#define MIE_MTIE (1L << 7)  // timer
-#define MIE_MSIE (1L << 3)  // software
-static inline uint64
-r_mie()
-{
-  uint64 x;
-  asm volatile("csrr %0, mie" : "=r" (x) );
-  return x;
-}
-
-static inline void 
-w_mie(uint64 x)
-{
-  asm volatile("csrw mie, %0" : : "r" (x));
-}
-
-// supervisor exception program counter, holds the
-// instruction address to which a return from
-// exception will go.
-static inline void 
-w_sepc(uint64 x)
-{
-  asm volatile("csrw sepc, %0" : : "r" (x));
-}
-
-static inline uint64
-r_sepc()
-{
-  uint64 x;
-  asm volatile("csrr %0, sepc" : "=r" (x) );
-  return x;
-}
-
 // Vector Base Address Register in EL1
 static inline void
 w_vbar_el1(uint64 x)
@@ -141,12 +20,6 @@ r_vbar_el1()
   uint64 x;
   asm volatile("mrs %0, vbar_el1" : "=r" (x) );
   return x;
-}
-
-static inline void
-w_pmpaddr0(uint64 x)
-{
-  asm volatile("csrw pmpaddr0, %0" : : "r" (x));
 }
 
 // TODO: fix comment
@@ -235,7 +108,8 @@ r_cntv_cval_el0()
 }
 
 static inline void
-w_cntv_cval_el0(uint64 x) {
+w_cntv_cval_el0(uint64 x)
+{
   asm volatile("msr cntv_cval_el0, %0" : : "r"(x) );
 }
 
@@ -270,7 +144,8 @@ intr_off()
 }
 
 static inline uint64
-daif() {
+daif()
+{
   uint64 d;
   asm volatile("mrs %0, daif" : "=r" (d));
   return d;
@@ -347,6 +222,18 @@ flush_tlb()
 #define PTE_PXN (1L << 53)   // Privileged eXecute Never
 #define PTE_UXN (1L << 54)   // Unprivileged(user) eXecute Never
 
+// attribute index
+#define AI_DEVICE_nGnRnE_IDX  0x0
+#define AI_NORMAL_NC_IDX      0x1
+
+// memory type
+#define MT_DEVICE_nGnRnE  0x0
+#define MT_NORMAL_NC      0x44
+
+#define PTE_INDX(idx) (((idx) & 7) << 2)
+#define PTE_NORMAL  PTE_INDX(AI_NORMAL_NC_IDX)
+#define PTE_DEVICE  PTE_INDX(AI_DEVICE_nGnRnE_IDX)
+
 // shift a physical address to the right place for a PTE.
 #define PA2PTE(pa) ((((uint64)pa) >> 12) << 10)
 
@@ -367,3 +254,21 @@ flush_tlb()
 
 typedef uint64 pte_t;
 typedef uint64 *pagetable_t; // 512 PTEs
+
+// translation control register
+#define TCR_T0SZ(n)   ((n) & 0x3f)
+#define TCR_IRGN0(n)  (((n) & 0x3) << 8)
+#define TCR_ORGN0(n)  (((n) & 0x3) << 10)
+#define TCR_SH0(n)    (((n) & 0x3) << 12)
+#define TCR_TG0(n)    (((n) & 0x3) << 14)
+#define TCR_T1SZ(n)   (((n) & 0x3f) << 16)
+#define TCR_A1(n)     (((n) & 0x1) << 22)
+#define TCR_EPD1(n)   (((n) & 0x1) << 23)
+#define TCR_IRGN1(n)  (((n) & 0x3) << 24)
+#define TCR_ORGN1(n)  (((n) & 0x3) << 26)
+#define TCR_SH1(n)    (((n) & 0x3) << 28)
+#define TCR_TG1(n)    (((n) & 0x3) << 30)
+#define TCR_IPS(n)    (((n) & 0x7) << 32)
+#define TCR_AS(n)     (((n) & 0x1) << 36)
+#define TCR_TBI0(n)   (((n) & 0x1) << 37)
+#define TCR_TBI1(n)   (((n) & 0x1) << 38)
