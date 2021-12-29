@@ -329,12 +329,23 @@ flush_tlb()
 #define PGROUNDDOWN(a) (((a)) & ~(PGSIZE-1))
 
 #define PTE_V (3L << 0) // valid
-#define PTE_R (1L << 1)
-#define PTE_W (1L << 2)
-#define PTE_X (1L << 3)
-#define PTE_U (1L << 4) // 1 -> user can access
-#define PTE_PXN (1UL << 53)   // privileged XN
-#define PTE_UXN (1UL << 54)   // user XN
+// PTE_AF(Access Flag)
+//
+// 0 -- this block entry has not yet.
+// 1 -- this block entry has been used.
+#define PTE_AF  (1L << 10)
+// PTE_AP(Access Permission) is 2bit field.
+//        EL0   EL1
+// 00 --   x    RW
+// 01 --  RW    RW
+// 10 --   x    RO
+// 11 --  RO    RO
+#define PTE_AP(ap)  (((ap) & 3L) << 6)
+#define PTE_U   PTE_AP(1)
+#define PTE_RO  PTE_AP(2)
+#define PTE_URO PTE_AP(3)
+#define PTE_PXN (1L << 53)   // Privileged eXecute Never
+#define PTE_UXN (1L << 54)   // Unprivileged(user) eXecute Never
 
 // shift a physical address to the right place for a PTE.
 #define PA2PTE(pa) ((((uint64)pa) >> 12) << 10)
