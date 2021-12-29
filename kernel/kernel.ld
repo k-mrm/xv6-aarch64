@@ -4,12 +4,13 @@ ENTRY( _entry )
 SECTIONS
 {
   /*
-   * ensure that entry.S / _entry is at 0x40000000,
+   * ensure that entry.S / _entry is at 0x40000000(physical address),
    * where qemu's -kernel jumps.
+   * 0x40000000(PA) is 0xffffff8040000000(VA);
    */
-  . = 0x40000000;
+  . = 0xffffff8040000000;
 
-  .text : {
+  .text : AT(0x40000000) {
     *(.text .text.*)
     . = ALIGN(0x1000);
     _trampoline = .;

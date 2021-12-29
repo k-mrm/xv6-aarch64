@@ -27,15 +27,17 @@
 // interrupt controller GICv2
 #define GICV2 0x08000000L
 
-// the kernel expects there to be RAM
-// for use by the kernel and user pages
-// from physical address 0x40000000 to PHYSTOP.
-#define KERNBASE 0x40000000L
-#define PHYSTOP (KERNBASE + 128*1024*1024)
+#define EXTMEM    0x40000000L             // Start of extended memory
+#define PHYSTOP   (EXTMEM+128*1024*1024)  // Top physical memory
 
-// map the trampoline page to the highest address,
-// in both user and kernel space.
-#define TRAMPOLINE (MAXVA - PGSIZE)
+#define KERNBASE  0xffffff8000000000L     // First kernel virtual address
+#define KERNLINK  (KERNBASE+EXTMEM)       // virtual address where kernel is linked
+
+#define V2P(a) (((uint64)(a)) - KERNBASE)
+#define P2V(a) ((void *)(((char *)(a)) + KERNBASE))
+
+#define V2P_WO(x) ((x) - KERNBASE)    // same as V2P, but without casts
+#define P2V_WO(x) ((x) + KERNBASE)    // same as P2V, but without casts
 
 // map kernel stacks beneath the trampoline,
 // each surrounded by invalid guard pages.
@@ -49,5 +51,4 @@
 //   expandable heap
 //   ...
 //   TRAPFRAME (p->trapframe, used by the trampoline)
-//   TRAMPOLINE (the same page as in the kernel)
 #define TRAPFRAME (TRAMPOLINE - PGSIZE)
