@@ -50,7 +50,9 @@ reload_timer()
   w_cntv_tval_el0(interval_clk);
 }
 
-void timerintr() {
+void
+timerintr()
+{
   disable_timer();
   reload_timer();
   enable_timer();
