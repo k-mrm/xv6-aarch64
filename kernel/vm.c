@@ -5,6 +5,8 @@
 #include "aarch64.h"
 #include "defs.h"
 #include "fs.h"
+#include "spinlock.h"
+#include "proc.h"
 
 /*
  * the kernel's page table.
@@ -35,7 +37,7 @@ kvmmake(void)
   kvmmap(kpgtbl, KERNBASE, V2P(KERNBASE), (uint64)etext-KERNBASE, PTE_NORMAL | PTE_RO);
 
   // map kernel data and the physical RAM we'll make use of.
-  kvmmap(kpgtbl, (uint64)etext, V2P(etext), P2V(PHYSTOP)-etext, PTE_NORMAL | PTE_XN);
+  kvmmap(kpgtbl, (uint64)etext, V2P(etext), (uint64)P2V(PHYSTOP)-(uint64)etext, PTE_NORMAL | PTE_XN);
 
   // map kernel stacks
   proc_mapstacks(kpgtbl);
@@ -253,8 +255,6 @@ switchuvm(struct proc *p)
 {
   if(p == 0)
     panic("switchuvm: no process");
-  if(p->kstack == 0)
-    panic("switchuvm: no kstack");
   if(p->pagetable == 0)
     panic("switchuvm: no pagetable");
 

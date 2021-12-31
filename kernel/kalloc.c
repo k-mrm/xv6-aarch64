@@ -48,7 +48,7 @@ kfree(void *va)
 {
   struct run *r;
 
-  if(((uint64)va % PGSIZE) != 0 || (char*)va < end || (uint64)va >= P2V(PHYSTOP))
+  if(((uint64)va % PGSIZE) != 0 || (char*)va < end || (uint64)va >= (uint64)P2V(PHYSTOP))
     panic("kfree");
 
   // Fill with junk to catch dangling refs.
