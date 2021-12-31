@@ -14,7 +14,6 @@ OBJS = \
   $K/vm.o \
   $K/proc.o \
   $K/swtch.o \
-  $K/trampoline.o \
   $K/trap.o \
   $K/syscall.o \
   $K/sysproc.o \
@@ -26,7 +25,9 @@ OBJS = \
   $K/pipe.o \
   $K/exec.o \
   $K/sysfile.o \
-  $K/trapvec.o \
+  $K/trapasm.o \
+  $K/kernelvec.o \
+  $K/uservec.o \
   $K/timer.o \
   $K/virtio_disk.o
 
