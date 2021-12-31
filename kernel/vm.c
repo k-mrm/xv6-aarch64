@@ -23,19 +23,19 @@ kvmmake(void)
   memset(kpgtbl, 0, PGSIZE);
 
   // uart registers
-  kvmmap(kpgtbl, UART0, UART0, PGSIZE, PTE_DEVICE | PTE_XN);
+  kvmmap(kpgtbl, UART0, V2P(UART0), PGSIZE, PTE_DEVICE | PTE_XN);
 
   // virtio mmio disk interface
-  kvmmap(kpgtbl, VIRTIO0, VIRTIO0, PGSIZE, PTE_DEVICE | PTE_XN);
+  kvmmap(kpgtbl, VIRTIO0, V2P(VIRTIO0), PGSIZE, PTE_DEVICE | PTE_XN);
 
   // GICv2
-  kvmmap(kpgtbl, GICV2, GICV2, 0x20000, PTE_DEVICE | PTE_XN);
+  kvmmap(kpgtbl, GICV2, V2P(GICV2), 0x20000, PTE_DEVICE | PTE_XN);
 
   // map kernel text executable and read-only.
-  kvmmap(kpgtbl, KERNBASE, KERNBASE, (uint64)etext-KERNBASE, PTE_NORMAL | PTE_RO);
+  kvmmap(kpgtbl, KERNBASE, V2P(KERNBASE), (uint64)etext-KERNBASE, PTE_NORMAL | PTE_RO);
 
   // map kernel data and the physical RAM we'll make use of.
-  kvmmap(kpgtbl, (uint64)etext, (uint64)etext, PHYSTOP-(uint64)etext, PTE_NORMAL | PTE_XN);
+  kvmmap(kpgtbl, (uint64)etext, V2P(etext), PHYSTOP-V2P(etext), PTE_NORMAL | PTE_XN);
 
   // map kernel stacks
   proc_mapstacks(kpgtbl);
@@ -79,7 +79,7 @@ walk(pagetable_t pagetable, uint64 va, int alloc)
 
   for(int level = 1; level < 3; level--) {
     pte_t *pte = &pagetable[PX(level, va)];
-    if(*pte & PTE_V) {
+    if(*pte & PTE_TABLE) {
       pagetable = (pagetable_t)PTE2PA(*pte);
     } else {
       if(!alloc || (pagetable = (pde_t*)kalloc()) == 0)
@@ -88,7 +88,7 @@ walk(pagetable_t pagetable, uint64 va, int alloc)
       *pte = PA2PTE(pagetable) | PTE_TABLE | PTE_VALID;
     }
   }
-  return &pagetable[PX(0, va)];
+  return &pagetable[PX(3, va)];
 }
 
 // Look up a virtual address, return the physical address,
@@ -298,7 +298,7 @@ uvmcopy(pagetable_t old, pagetable_t new, uint64 sz)
 {
   pte_t *pte;
   uint64 pa, i;
-  uint flags;
+  uint64 flags;
   char *mem;
 
   for(i = 0; i < sz; i += PGSIZE){
