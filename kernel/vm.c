@@ -82,12 +82,12 @@ walk(pagetable_t pagetable, uint64 va, int alloc)
   for(int level = 1; level < 3; level--) {
     pte_t *pte = &pagetable[PX(level, va)];
     if(*pte & PTE_TABLE) {
-      pagetable = (pagetable_t)PTE2PA(*pte);
+      pagetable = (pagetable_t)P2V(PTE2PA(*pte));
     } else {
       if(!alloc || (pagetable = (pde_t*)kalloc()) == 0)
         return 0;
       memset(pagetable, 0, PGSIZE);
-      *pte = PA2PTE(pagetable) | PTE_TABLE | PTE_VALID;
+      *pte = PA2PTE(V2P(pagetable)) | PTE_TABLE | PTE_VALID;
     }
   }
   return &pagetable[PX(3, va)];
@@ -187,7 +187,7 @@ uvmunmap(pagetable_t pagetable, uint64 va, uint64 npages, int do_free)
       panic("uvmunmap: not a leaf");
     if(do_free){
       uint64 pa = PTE2PA(*pte);
-      kfree((void*)pa);
+      kfree((void*)P2V(pa));
     }
     *pte = 0;
   }
@@ -218,7 +218,7 @@ uvminit(pagetable_t pagetable, uchar *src, uint sz)
     panic("inituvm: more than a page");
   mem = kalloc();
   memset(mem, 0, PGSIZE);
-  mappages(pagetable, 0, PGSIZE, (uint64)mem, PTE_NORMAL|PTE_U);
+  mappages(pagetable, 0, PGSIZE, V2P(mem), PTE_NORMAL|PTE_U);
   memmove(mem, src, sz);
 }
 
@@ -241,7 +241,7 @@ uvmalloc(pagetable_t pagetable, uint64 oldsz, uint64 newsz)
       return 0;
     }
     memset(mem, 0, PGSIZE);
-    if(mappages(pagetable, a, PGSIZE, (uint64)mem, PTE_NORMAL|PTE_U) != 0){
+    if(mappages(pagetable, a, PGSIZE, V2P(mem), PTE_NORMAL|PTE_U) != 0){
       kfree(mem);
       uvmdealloc(pagetable, a, oldsz);
       return 0;
@@ -298,7 +298,7 @@ freewalk(pagetable_t pagetable)
     if((pte & PTE_VALID) && (pte & PTE_TABLE) && !(pte & PTE_AF)){
       // this PTE points to a lower-level page table.
       uint64 child = PTE2PA(pte);
-      freewalk((pagetable_t)child);
+      freewalk((pagetable_t)P2V(child));
       pagetable[i] = 0;
     } else if(pte & PTE_AF){
       panic("freewalk: leaf");
@@ -340,8 +340,8 @@ uvmcopy(pagetable_t old, pagetable_t new, uint64 sz)
     flags = PTE_FLAGS(*pte);
     if((mem = kalloc()) == 0)
       goto err;
-    memmove(mem, (char*)pa, PGSIZE);
-    if(mappages(new, i, PGSIZE, (uint64)mem, flags) != 0){
+    memmove(mem, (char*)P2V(pa), PGSIZE);
+    if(mappages(new, i, PGSIZE, V2P(mem), flags) != 0){
       kfree(mem);
       goto err;
     }
