@@ -1,3 +1,5 @@
+#include "aarch64.h" 
+#include "memlayout.h"
         // qemu -kernel loads the kernel at 0x40000000
         // and causes each CPU to jump there.
         // kernel.ld causes the following code to
@@ -5,6 +7,48 @@
 .section .text
 .global _entry
 _entry:
+        mrs x1, mpidr_el1
+        and x1, x1, #3
+        cbz x1, entry         // primary
+        b entryothers         // secondary
+
+entry:
+        // set up pagetable
+        // Phase 1.
+        // map the kernel code identically
+        // map 0x40000000 - PA(kend)-1 to 0x40000000 - PA(kend)-1
+        // Phase 2.
+        // map the peripheral memory
+        // map 0xffffff8008000000 - 0xffffff803fffffff to 0x8000000 - 0x3fffffff
+        // Phase 3.
+        // map the kernel code
+        // map 0xffffff8040000000 - VA(kend)-1 to 0x40000000 - PA(kend)-1
+
+        // Phase 1
+
+        // Phase 2
+
+        // Phase 3
+
+entryothers:  // secondary CPU starts here
+        // load pagetable
+
+        // mmu configure
+        // setup tcr
+        ldr x0, =(TCR_T0SZ(25)|TCR_T1SZ(25)|TCR_TG0(0)|TCR_TG1(2)|TCR_IPS(0))
+        msr tcr_el1, x0
+
+        // setup mair
+        ldr x1, =((MT_DEVICE_nGnRnE<<(8*AI_DEVICE_nGnRnE_IDX)) | (MT_NORMAL_NC<<(8*AI_NORMAL_NC_IDX)))
+        msr mair_el1, x1
+
+        isb
+
+        // enable paging
+        mrs x0, sctlr_el1
+        orr x0, x0, #1
+        msr sctlr_el1, x0
+
         // set up a stack for C.
         // stack0 is declared in start.c,
         // with a 4096-byte stack per CPU.
