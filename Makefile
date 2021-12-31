@@ -29,7 +29,9 @@ OBJS = \
   $K/kernelvec.o \
   $K/uservec.o \
   $K/timer.o \
-  $K/virtio_disk.o
+  $K/virtio_disk.o \
+  $K/psci.o \
+  $K/gicv2.o \
 
 # Try to infer the correct TOOLPREFIX if not set
 ifndef TOOLPREFIX
@@ -152,7 +154,7 @@ ifndef CPUS
 CPUS := 3
 endif
 
-QEMUOPTS = -machine virt,gic-version=2 -bios none -kernel $K/kernel -m 128M -smp $(CPUS) -nographic
+QEMUOPTS = -machine virt,gic-version=2 -kernel $K/kernel -m 128M -smp $(CPUS) -nographic
 QEMUOPTS += -drive file=fs.img,if=none,format=raw,id=x0
 QEMUOPTS += -device virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0
 
