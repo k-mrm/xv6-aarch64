@@ -52,7 +52,7 @@ gicdinit()
 void
 gicv2init()
 {
-  // gic_setup_ppi(TIMER_IRQ);
+  gic_setup_ppi(TIMER0_IRQ);
   gic_setup_spi(UART0_IRQ);
   gic_setup_spi(VIRTIO0_IRQ);
 }
@@ -71,18 +71,6 @@ static void
 gic_enable_int(uint32 intid)
 {
   *RegD(D_ISENABLER(intid / 32)) |= 1 << (intid % 32);
-}
-
-static void
-gic_disable_int(uint32 intid)
-{
-  *RegD(D_ICENABLER(intid / 32)) |= 1 << (intid % 32);
-}
-
-static void
-gic_set_pending(uint32 intid)
-{
-  *RegD(D_ISPENDR(intid / 32)) |= 1 << (intid % 32);
 }
 
 static void

@@ -35,7 +35,7 @@ exec(char *path, char **argv)
   if(elf.magic != ELF_MAGIC)
     goto bad;
 
-  if((pagetable = proc_pagetable(p)) == 0)
+  if((pagetable = uvmcreate()) == 0)
     goto bad;
 
   // Load program into memory.
@@ -114,13 +114,13 @@ exec(char *path, char **argv)
   p->sz = sz;
   p->trapframe->elr = elf.entry;  // initial program counter = main
   p->trapframe->sp = sp; // initial stack pointer
-  proc_freepagetable(oldpagetable, oldsz);
+  uvmfree(oldpagetable, oldsz);
 
   return argc; // this ends up in x0, the first argument to main(argc, argv)
 
  bad:
   if(pagetable)
-    proc_freepagetable(pagetable, sz);
+    uvmfree(pagetable, sz);
   if(ip){
     iunlockput(ip);
     end_op();

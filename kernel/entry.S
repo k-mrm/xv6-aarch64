@@ -20,5 +20,5 @@ _entry:
         mov sp, x0
         // jump to start() in start.c
         b start
-spin:
-        b .
+
+        b .   // spin

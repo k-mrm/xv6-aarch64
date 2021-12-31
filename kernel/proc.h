@@ -84,9 +84,9 @@ struct trapframe {
   uint64 x28;
   uint64 x29;
   uint64 x30;
-  uint64 elr;        // saved user program counter
+  uint64 elr;
   uint64 spsr;
-  uint64 kernel_sp;  // top of process's kernel stack
+  uint64 sp;     
 };
 
 

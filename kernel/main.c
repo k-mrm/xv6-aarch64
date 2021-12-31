@@ -24,6 +24,7 @@ main()
     trapinithart();  // install trap vector
     gicv2init();     // set up interrupt controller
     gicv2inithart();
+    timerinit();
     binit();         // buffer cache
     iinit();         // inode table
     fileinit();      // file table
@@ -39,6 +40,7 @@ main()
     kvminithart();    // turn on paging
     trapinithart();   // install trap vector
     gicv2inithart();
+    timerinit();
   }
 
   scheduler();

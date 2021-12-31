@@ -32,7 +32,7 @@ w_ttbr0_el1(uint64 x)
 }
 
 static inline uint64
-r_ttbr0_el1(void)
+r_ttbr0_el1()
 {
   uint64 x;
   asm volatile("mrs %0, ttbr0_el1" : "=r" (x) );
@@ -46,10 +46,34 @@ w_ttbr1_el1(uint64 x)
 }
 
 static inline uint64
-r_ttbr1_el1(void)
+r_ttbr1_el1()
 {
   uint64 x;
   asm volatile("mrs %0, ttbr1_el1" : "=r" (x) );
+  return x;
+}
+
+static inline uint64
+r_esr_el1()
+{
+  uint64 x;
+  asm volatile("mrs %0, esr_el1" : "=r"(x) );
+  return x;
+}
+
+static inline uint64
+r_elr_el1()
+{
+  uint64 x;
+  asm volatile("mrs %0, elr_el1" : "=r"(x) );
+  return x;
+}
+
+static inline uint64
+r_far_el1()
+{
+  uint64 x;
+  asm volatile("mrs %0, far_el1" : "=r"(x) );
   return x;
 }
 
@@ -64,24 +88,6 @@ static inline void
 w_mscratch(uint64 x)
 {
   asm volatile("csrw mscratch, %0" : : "r" (x));
-}
-
-// Supervisor Trap Cause
-static inline uint64
-r_scause()
-{
-  uint64 x;
-  asm volatile("csrr %0, scause" : "=r" (x) );
-  return x;
-}
-
-// Supervisor Trap Value
-static inline uint64
-r_stval()
-{
-  uint64 x;
-  asm volatile("csrr %0, stval" : "=r" (x) );
-  return x;
 }
 
 // armv8 generic timer
@@ -100,17 +106,17 @@ w_cntv_ctl_el0(uint64 x)
 }
 
 static inline uint64
-r_cntv_cval_el0()
+r_cntv_tval_el0()
 {
   uint64 x;
-  asm volatile("mrs %0, cntv_cval_el0" : "=r"(x) );
+  asm volatile("mrs %0, cntv_tval_el0" : "=r"(x) );
   return x;
 }
 
 static inline void
-w_cntv_cval_el0(uint64 x)
+w_cntv_tval_el0(uint64 x)
 {
-  asm volatile("msr cntv_cval_el0, %0" : : "r"(x) );
+  asm volatile("msr cntv_tval_el0, %0" : : "r"(x) );
 }
 
 static inline uint64
@@ -258,12 +264,6 @@ flush_tlb()
 #define PXMASK          0x1FF // 9 bits
 #define PXSHIFT(level)  (39-(level)*9)
 #define PX(level, va) ((((uint64)(va)) >> PXSHIFT(level)) & PXMASK)
-
-// one beyond the highest possible virtual address.
-// MAXVA is actually one bit less than the max allowed by
-// Sv39, to avoid having to sign-extend virtual addresses
-// that have the high bit set.
-#define MAXVA (1L << (9 + 9 + 9 + 12 - 1))
 
 typedef uint64 pte_t;
 typedef uint64 *pagetable_t; // 512 PTEs

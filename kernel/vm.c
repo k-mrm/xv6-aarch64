@@ -39,10 +39,6 @@ kvmmake(void)
   // map kernel data and the physical RAM we'll make use of.
   kvmmap(kpgtbl, (uint64)etext, (uint64)etext, PHYSTOP-(uint64)etext, PTE_NORMAL | PTE_XN);
 
-  // map the trampoline for trap entry/exit to
-  // the highest virtual address in the kernel.
-  kvmmap(kpgtbl, TRAMPOLINE, (uint64)trampoline, PGSIZE, PTE_NORMAL | PTE_RO);
-
   // map kernel stacks
   proc_mapstacks(kpgtbl);
   
@@ -61,7 +57,7 @@ kvminit(void)
 void
 kvminithart()
 {
-  w_ttbr0_el1((uint64)kernel_pagetable);
+  w_ttbr1_el1((uint64)kernel_pagetable);
   flush_tlb();
 }
 

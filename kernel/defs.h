@@ -86,8 +86,6 @@ void            exit(int);
 int             fork(void);
 int             growproc(int);
 void            proc_mapstacks(pagetable_t);
-pagetable_t     proc_pagetable(struct proc *);
-void            proc_freepagetable(pagetable_t, uint64);
 int             kill(int);
 struct cpu*     mycpu(void);
 struct cpu*     getmycpu(void);
@@ -155,8 +153,8 @@ int             uartgetc(void);
 // vm.c
 void            kvminit(void);
 void            kvminithart(void);
-void            kvmmap(pagetable_t, uint64, uint64, uint64, int);
-int             mappages(pagetable_t, uint64, uint64, uint64, int);
+void            kvmmap(pagetable_t, uint64, uint64, uint64, uint64);
+int             mappages(pagetable_t, uint64, uint64, uint64, uint64);
 pagetable_t     uvmcreate(void);
 void            uvminit(pagetable_t, uchar *, uint);
 uint64          uvmalloc(pagetable_t, uint64, uint64);
@@ -173,6 +171,13 @@ int             copyinstr(pagetable_t, char *, uint64, uint64);
 // gicv2.c
 void            gicv2init(void);
 void            gicv2inithart(void);
+uint32          gic_iar(void);
+int             gic_iar_irq(uint32);
+void            gic_eoi(uint32);
+
+// timer.c
+void            timerinit(void);
+void            timerintr(void);
 
 // virtio_disk.c
 void            virtio_disk_init(void);
