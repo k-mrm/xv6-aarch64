@@ -29,7 +29,7 @@ trapinithart(void)
 
 //
 // handle an interrupt, exception, or system call from user space.
-// called from trampoline.S
+// called from uservec.S
 //
 void
 usertrap(void)
