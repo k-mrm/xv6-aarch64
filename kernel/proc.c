@@ -398,7 +398,10 @@ scheduler(void)
         // before jumping back to us.
         p->state = RUNNING;
         c->proc = p;
+        switchuvm(p);
         swtch(&c->context, &p->context);
+
+        switchkvm();
 
         // Process is done running for now.
         // It should have changed its p->state before coming back.

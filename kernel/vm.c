@@ -248,6 +248,27 @@ uvmalloc(pagetable_t pagetable, uint64 oldsz, uint64 newsz)
   return newsz;
 }
 
+void
+switchuvm(struct proc *p)
+{
+  if(p == 0)
+    panic("switchuvm: no process");
+  if(p->kstack == 0)
+    panic("switchuvm: no kstack");
+  if(p->pagetable == 0)
+    panic("switchuvm: no pagetable");
+
+  w_ttbr0_el1(V2P(p->pagetable));
+  flush_tlb();
+}
+
+void
+switchkvm(void)
+{
+  w_ttbr0_el1(0);
+  flush_tlb();
+}
+
 // Deallocate user pages to bring the process size from oldsz to
 // newsz.  oldsz and newsz need not be page-aligned, nor does newsz
 // need to be less than oldsz.  oldsz can be larger than the actual

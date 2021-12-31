@@ -167,6 +167,8 @@ uint64          uva2ka(pagetable_t, uint64);
 int             copyout(pagetable_t, uint64, char *, uint64);
 int             copyin(pagetable_t, char *, uint64, uint64);
 int             copyinstr(pagetable_t, char *, uint64, uint64);
+void            switchuvm(struct proc *);
+void            switchkvm(void);
 
 // gicv2.c
 void            gicv2init(void);
