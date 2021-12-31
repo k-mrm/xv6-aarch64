@@ -9,7 +9,7 @@
 #include "aarch64.h"
 #include "defs.h"
 
-void freerange(void *pa_start, void *pa_end);
+void freerange(void *vstart, void *vend);
 
 extern char end[]; // first address after kernel.
                    // defined by kernel.ld.
@@ -27,15 +27,15 @@ void
 kinit()
 {
   initlock(&kmem.lock, "kmem");
-  freerange(end, (void*)PHYSTOP);
+  freerange(end, P2V(PHYSTOP));
 }
 
 void
-freerange(void *pa_start, void *pa_end)
+freerange(void *vstart, void *vend)
 {
   char *p;
-  p = (char*)PGROUNDUP((uint64)pa_start);
-  for(; p + PGSIZE <= (char*)pa_end; p += PGSIZE)
+  p = (char*)PGROUNDUP((uint64)vstart);
+  for(; p + PGSIZE <= (char*)vend; p += PGSIZE)
     kfree(p);
 }
 
@@ -44,17 +44,17 @@ freerange(void *pa_start, void *pa_end)
 // call to kalloc().  (The exception is when
 // initializing the allocator; see kinit above.)
 void
-kfree(void *pa)
+kfree(void *va)
 {
   struct run *r;
 
-  if(((uint64)pa % PGSIZE) != 0 || (char*)pa < end || (uint64)pa >= PHYSTOP)
+  if(((uint64)va % PGSIZE) != 0 || (char*)va < end || (uint64)va >= P2V(PHYSTOP))
     panic("kfree");
 
   // Fill with junk to catch dangling refs.
-  memset(pa, 1, PGSIZE);
+  memset(va, 1, PGSIZE);
 
-  r = (struct run*)pa;
+  r = (struct run*)va;
 
   acquire(&kmem.lock);
   r->next = kmem.freelist;

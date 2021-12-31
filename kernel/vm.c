@@ -35,7 +35,7 @@ kvmmake(void)
   kvmmap(kpgtbl, KERNBASE, V2P(KERNBASE), (uint64)etext-KERNBASE, PTE_NORMAL | PTE_RO);
 
   // map kernel data and the physical RAM we'll make use of.
-  kvmmap(kpgtbl, (uint64)etext, V2P(etext), PHYSTOP-V2P(etext), PTE_NORMAL | PTE_XN);
+  kvmmap(kpgtbl, (uint64)etext, V2P(etext), P2V(PHYSTOP)-etext, PTE_NORMAL | PTE_XN);
 
   // map kernel stacks
   proc_mapstacks(kpgtbl);
