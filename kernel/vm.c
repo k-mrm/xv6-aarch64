@@ -58,6 +58,7 @@ void
 kvminithart()
 {
   w_ttbr1_el1((uint64)kernel_pagetable);
+  w_ttbr0_el1(0);
   flush_tlb();
 }
 
