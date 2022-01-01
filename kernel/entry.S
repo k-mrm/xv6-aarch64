@@ -4,7 +4,7 @@
         // and causes each CPU to jump there.
         // kernel.ld causes the following code to
         // be placed at 0x40000000.
-.section .text
+.section ".text"
 .global _entry
 _entry:
         mrs x1, mpidr_el1
@@ -19,12 +19,14 @@ entry:
 
 entryothers:  // secondary CPU starts here
         // load pagetable
-        ldr x0, =V2P_WO(l1entrypgt)
-        ldr x1, =V2P_WO(l1kpgt)
+        adrp x0, l1entrypgt
+        adrp x1, l1kpgt
         msr ttbr0_el1, x0
         msr ttbr1_el1, x1
 
-        // mmu configure
+        mov x3, x0
+        mov x4, x1
+
         // setup tcr
         ldr x0, =(TCR_T0SZ(25)|TCR_T1SZ(25)|TCR_TG0(0)|TCR_TG1(2)|TCR_IPS(0))
         msr tcr_el1, x0
@@ -45,6 +47,7 @@ entryothers:  // secondary CPU starts here
         br x1       // jump to higher address (0xffffff8000000000~)
 
 _start:
+        b .
         // set up a stack for C.
         // stack0 is declared in start.c,
         // with a 4096-byte stack per CPU.

@@ -8,6 +8,9 @@ SECTIONS
    * where qemu's -kernel jumps.
    * 0x40000000(PA) is 0xffffff8040000000(VA);
    */
+/*
+  . = 0x40000000;
+  */
   . = 0xffffff8040000000;
 
   .text : AT(0x40000000) {
