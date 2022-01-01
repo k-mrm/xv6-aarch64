@@ -14,24 +14,15 @@ _entry:
 
 entry:
         // set up pagetable
-        // Phase 1.
-        // map the kernel code identically
-        // map 0x40000000 - PA(kend)-1 to 0x40000000 - PA(kend)-1
-        // Phase 2.
-        // map the peripheral memory
-        // map 0xffffff8008000000 - 0xffffff803fffffff to 0x8000000 - 0x3fffffff
-        // Phase 3.
-        // map the kernel code
-        // map 0xffffff8040000000 - VA(kend)-1 to 0x40000000 - PA(kend)-1
-
-        // Phase 1
-
-        // Phase 2
-
-        // Phase 3
+        // call entrypgtinit() in start.c
+        bl entrypgtinit
 
 entryothers:  // secondary CPU starts here
         // load pagetable
+        ldr x0, =V2P_WO(l1entrypgt)
+        ldr x1, =V2P_WO(l1kpgt)
+        msr ttbr0_el1, x0
+        msr ttbr1_el1, x1
 
         // mmu configure
         // setup tcr
@@ -44,11 +35,16 @@ entryothers:  // secondary CPU starts here
 
         isb
 
+        ldr x1, =_start   // x1 = VA(_start)
+
         // enable paging
         mrs x0, sctlr_el1
         orr x0, x0, #1
         msr sctlr_el1, x0
 
+        br x1       // jump to higher address (0xffffff8000000000~)
+
+_start:
         // set up a stack for C.
         // stack0 is declared in start.c,
         // with a 4096-byte stack per CPU.
@@ -63,6 +59,6 @@ entryothers:  // secondary CPU starts here
         add x0, x0, x1
         mov sp, x0
         // jump to start() in start.c
-        b start
+        b main
 
         b .   // spin

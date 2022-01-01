@@ -38,4 +38,8 @@ SECTIONS
   }
 
   PROVIDE(end = .);
+
+  . = ALIGN(0x1000);
+  . += 2*1024*1024;   /* keep 2MB region */
+  PROVIDE(secend = .);
 }
