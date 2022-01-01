@@ -234,7 +234,7 @@ typedef uint64 *pagetable_t; // 512 PTEs
 #define MT_DEVICE_nGnRnE  0x0
 #define MT_NORMAL_NC      0x44
 
-#define PTE_INDX(i) ((i & 7) << 2)
+#define PTE_INDX(i) (((i) & 7) << 2)
 #define PTE_DEVICE  PTE_INDX(AI_DEVICE_nGnRnE_IDX)
 #define PTE_NORMAL  PTE_INDX(AI_NORMAL_NC_IDX)
 

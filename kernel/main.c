@@ -11,14 +11,15 @@ void
 main()
 {
   if(cpuid() == 0){
+    for(;;);
+    kinit();         // physical page allocator
+    kvminit();       // create kernel page table
+    kvminithart();   // turn on paging
     consoleinit();
     printfinit();
     printf("\n");
     printf("xv6 kernel is booting\n");
     printf("\n");
-    kinit();         // physical page allocator
-    kvminit();       // create kernel page table
-    kvminithart();   // turn on paging
     procinit();      // process table
     trapinit();      // trap vectors
     trapinithart();  // install trap vector
@@ -36,8 +37,8 @@ main()
     while(started == 0)
       ;
     __sync_synchronize();
-    printf("hart %d starting\n", cpuid());
     kvminithart();    // turn on paging
+    printf("hart %d starting\n", cpuid());
     trapinithart();   // install trap vector
     gicv2inithart();
     timerinit();
