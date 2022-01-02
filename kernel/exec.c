@@ -113,6 +113,7 @@ exec(char *path, char **argv)
   p->pagetable = pagetable;
   p->sz = sz;
   p->trapframe->elr = elf.entry;  // initial program counter = main
+  p->trapframe->spsr = 0;     // switch to EL0
   p->trapframe->sp = sp; // initial stack pointer
   uvmfree(oldpagetable, oldsz);
 

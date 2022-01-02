@@ -282,7 +282,6 @@ virtio_disk_rw(struct buf *b, int write)
 void
 virtio_disk_intr()
 {
-  printf("diskintr");
   acquire(&disk.vdisk_lock);
 
   // the device won't raise another interrupt until we tell it

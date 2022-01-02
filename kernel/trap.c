@@ -111,7 +111,7 @@ devintr()
   int irq = gic_iar_irq(iar);
   int dev = 0;
 
-  printf("devintr irq %d", irq);
+  // printf("devintr irq %d", irq);
   if(irq == UART0_IRQ){
     uartintr();
     dev = 1;
@@ -121,6 +121,9 @@ devintr()
   } else if(irq == TIMER0_IRQ){
     timerintr();
     dev = 2;
+  } else if(irq == 1023) {
+    // do nothing
+    dev = 0;
   } else if(irq){
     printf("unexpected interrupt irq=%d\n", irq);
   }
