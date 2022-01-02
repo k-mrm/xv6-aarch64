@@ -39,7 +39,7 @@ usertrap(void)
   struct proc *p = myproc();
   
   uint64 ec = (r_esr_el1() >> 26) & 0x3f;
-  if(ec == 25){
+  if(ec == 21){
     // svc
     // system call
 
