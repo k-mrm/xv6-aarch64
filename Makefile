@@ -55,7 +55,7 @@ LD = $(TOOLPREFIX)ld
 OBJCOPY = $(TOOLPREFIX)objcopy
 OBJDUMP = $(TOOLPREFIX)objdump
 
-CFLAGS = -Wall -Werror -Og -ggdb -fno-omit-frame-pointer -mcpu=cortex-a72
+CFLAGS = -Wall -Werror -Og -g3 -fno-omit-frame-pointer -mcpu=cortex-a72+nofp
 CFLAGS += -MD
 CFLAGS += -ffreestanding -fno-common -nostdlib
 CFLAGS += -I.
