@@ -13,7 +13,7 @@ cpuid()
 static inline void
 w_vbar_el1(uint64 x)
 {
-  asm volatile("msr vbar_el1, %0" : : "r" (x));
+  asm volatile("msr vbar_el1, %0" : : "r" (x) );
 }
 
 static inline uint64
@@ -30,7 +30,7 @@ r_vbar_el1()
 static inline void
 w_ttbr0_el1(uint64 x)
 {
-  asm volatile("msr ttbr0_el1, %0" : : "r" (x));
+  asm volatile("msr ttbr0_el1, %0" : : "r" (x) );
 }
 
 static inline uint64
@@ -59,7 +59,7 @@ static inline uint64
 r_esr_el1()
 {
   uint64 x;
-  asm volatile("mrs %0, esr_el1" : "=r"(x) );
+  asm volatile("mrs %0, esr_el1" : "=r" (x) );
   return x;
 }
 
@@ -67,7 +67,7 @@ static inline uint64
 r_elr_el1()
 {
   uint64 x;
-  asm volatile("mrs %0, elr_el1" : "=r"(x) );
+  asm volatile("mrs %0, elr_el1" : "=r" (x) );
   return x;
 }
 
@@ -75,7 +75,7 @@ static inline uint64
 r_far_el1()
 {
   uint64 x;
-  asm volatile("mrs %0, far_el1" : "=r"(x) );
+  asm volatile("mrs %0, far_el1" : "=r" (x) );
   return x;
 }
 
@@ -84,35 +84,35 @@ static inline uint64
 r_cntv_ctl_el0()
 {
   uint64 x;
-  asm volatile("mrs %0, cntv_ctl_el0" : "=r"(x) );
+  asm volatile("mrs %0, cntv_ctl_el0" : "=r" (x) );
   return x;
 }
 
 static inline void
 w_cntv_ctl_el0(uint64 x)
 {
-  asm volatile("msr cntv_ctl_el0, %0" : : "r"(x) );
+  asm volatile("msr cntv_ctl_el0, %0" : : "r" (x) );
 }
 
 static inline uint64
 r_cntv_tval_el0()
 {
   uint64 x;
-  asm volatile("mrs %0, cntv_tval_el0" : "=r"(x) );
+  asm volatile("mrs %0, cntv_tval_el0" : "=r" (x) );
   return x;
 }
 
 static inline void
 w_cntv_tval_el0(uint64 x)
 {
-  asm volatile("msr cntv_tval_el0, %0" : : "r"(x) );
+  asm volatile("msr cntv_tval_el0, %0" : : "r" (x) );
 }
 
 static inline uint64
 r_cntvct_el0()
 {
   uint64 x;
-  asm volatile("mrs %0, cntvct_el0" : "=r"(x) );
+  asm volatile("mrs %0, cntvct_el0" : "=r" (x) );
   return x;
 }
 
@@ -120,7 +120,7 @@ static inline uint64
 r_cntfrq_el0()
 {
   uint64 x;
-  asm volatile("mrs %0, cntfrq_el0" : "=r"(x) );
+  asm volatile("mrs %0, cntfrq_el0" : "=r" (x) );
   return x;
 }
 
@@ -141,9 +141,9 @@ intr_off()
 static inline uint64
 daif()
 {
-  uint64 d;
-  asm volatile("mrs %0, daif" : "=r" (d));
-  return d;
+  uint64 x;
+  asm volatile("mrs %0, daif" : "=r" (x) );
+  return x;
 }
 
 // are device interrupts(irq) enabled?
@@ -151,7 +151,7 @@ static inline int
 intr_get()
 {
   uint64 x = daif();
-  return (x & 0x2) != 0;
+  return ((x >> 6) & 0x2) == 0;
 }
 
 static inline uint64
