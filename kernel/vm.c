@@ -34,7 +34,7 @@ kvmmake(void)
   kvmmap(kpgtbl, GICV2, V2P(GICV2), 0x20000, PTE_DEVICE | PTE_XN);
 
   // map kernel text executable and read-only.
-  kvmmap(kpgtbl, KERNBASE, V2P(KERNBASE), (uint64)etext-KERNBASE, PTE_NORMAL | PTE_RO);
+  kvmmap(kpgtbl, KERNLINK, V2P(KERNLINK), (uint64)etext-KERNLINK, PTE_NORMAL | PTE_RO);
 
   // map kernel data and the physical RAM we'll make use of.
   kvmmap(kpgtbl, (uint64)etext, V2P(etext), (uint64)P2V(PHYSTOP)-(uint64)etext, PTE_NORMAL | PTE_XN);
@@ -57,7 +57,7 @@ kvminit(void)
 void
 kvminithart()
 {
-  w_ttbr1_el1((uint64)kernel_pagetable);
+  w_ttbr1_el1(V2P(kernel_pagetable));
   w_ttbr0_el1(0);
   flush_tlb();
 }
@@ -80,7 +80,7 @@ walk(pagetable_t pagetable, uint64 va, int alloc)
   if(va >= MAXVA)
     panic("walk");
 
-  for(int level = 1; level < 3; level--) {
+  for(int level = 1; level < 3; level++) {
     pte_t *pte = &pagetable[PX(level, va)];
     if(*pte & PTE_TABLE) {
       pagetable = (pagetable_t)P2V(PTE2PA(*pte));
