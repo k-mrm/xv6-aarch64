@@ -30,8 +30,8 @@
 #define LCRH_WLEN_8BIT  (3<<5)
 #define CR    0x30
 #define IMSC  0x38
-#define IMSC_RX_ENABLE (1<<4)
-#define IMSC_TX_ENABLE (1<<5)
+#define INT_RX_ENABLE (1<<4)
+#define INT_TX_ENABLE (1<<5)
 #define ICR   0x44
 
 #define ReadReg(reg) (*(Reg(reg)))
@@ -67,7 +67,7 @@ uartinit(void)
   WriteReg(CR, 0x301);
 
   // enable transmit and receive interrupts.
-  WriteReg(IMSC, IMSC_RX_ENABLE | IMSC_TX_ENABLE);
+  WriteReg(IMSC, INT_RX_ENABLE | INT_TX_ENABLE);
 
   initlock(&uart_tx_lock, "uart");
 }
@@ -184,4 +184,7 @@ uartintr(void)
   acquire(&uart_tx_lock);
   uartstart();
   release(&uart_tx_lock);
+
+  // clear transmit and receive interrupts.
+  WriteReg(ICR, INT_RX_ENABLE|INT_TX_ENABLE);
 }
