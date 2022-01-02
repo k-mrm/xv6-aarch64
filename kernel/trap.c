@@ -111,6 +111,7 @@ devintr()
   int irq = gic_iar_irq(iar);
   int dev = 0;
 
+  printf("devintr irq %d", irq);
   if(irq == UART0_IRQ){
     uartintr();
     dev = 1;
