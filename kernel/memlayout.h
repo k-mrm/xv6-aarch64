@@ -29,7 +29,7 @@
 #define P2V_WO(x) ((x) + KERNBASE)    // same as P2V, but without casts
 
 // one beyond the highest possible virtual address.
-#define MAXVA ((1L << (9 + 9 + 9 + 12)) + KERNBASE)
+#define MAXVA (KERNBASE + (1ULL<<38))
 
 // qemu puts UART registers here in physical memory.
 #define UART0 (KERNBASE + 0x09000000L)
