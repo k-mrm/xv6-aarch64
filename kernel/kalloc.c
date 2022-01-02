@@ -24,10 +24,16 @@ struct {
 } kmem;
 
 void
-kinit()
+kinit1(void *vstart, void *vend)
 {
   initlock(&kmem.lock, "kmem");
-  freerange(end, P2V(PHYSTOP));
+  freerange(vstart, vend);
+}
+
+void
+kinit2(void *vstart, void *vend)
+{
+  freerange(vstart, vend);
 }
 
 void

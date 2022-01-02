@@ -5,16 +5,17 @@
 #include "defs.h"
 
 volatile static int started = 0;
+extern char end[];  // first address after kernel loaded from ELF file
 
 // start() jumps here in EL1 on all CPUs.
 void
 main()
 {
   if(cpuid() == 0){
-    for(;;);
-    kinit();         // physical page allocator
+    kinit1(end, (void*)(KERNLINK+2*1024*1024));  // physical page allocator
     kvminit();       // create kernel page table
     kvminithart();   // turn on paging
+    kinit2((void*)(KERNLINK+2*1024*1024), P2V(PHYSTOP));
     consoleinit();
     printfinit();
     printf("\n");
