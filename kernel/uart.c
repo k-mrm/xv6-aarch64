@@ -138,7 +138,7 @@ uartstart()
       return;
     }
     
-    if((ReadReg(FR) & FR_TXFF) == 0){
+    if(ReadReg(FR) & FR_TXFF){
       // the UART transmit holding register is full,
       // so we cannot give it another byte.
       // it will interrupt when it's ready for a new byte.
