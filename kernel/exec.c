@@ -12,6 +12,7 @@ static int loadseg(pde_t *pgdir, uint64 addr, struct inode *ip, uint offset, uin
 int
 exec(char *path, char **argv)
 {
+  printf("exec!\n");
   char *s, *last;
   int i, off;
   uint64 argc, sz = 0, sp, ustack[MAXARG], stackbase;
@@ -115,6 +116,7 @@ exec(char *path, char **argv)
   p->trapframe->elr = elf.entry;  // initial program counter = main
   p->trapframe->spsr = 0;     // switch to EL0
   p->trapframe->sp = sp; // initial stack pointer
+  switchuvm(p);
   uvmfree(oldpagetable, oldsz);
 
   return argc; // this ends up in x0, the first argument to main(argc, argv)

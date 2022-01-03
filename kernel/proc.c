@@ -24,6 +24,8 @@ static void freeproc(struct proc *p);
 // must be acquired before any p->lock.
 struct spinlock wait_lock;
 
+extern pagetable_t kernel_pagetable;
+
 // Allocate a page for each process's kernel stack.
 // Map it high in memory, followed by an invalid
 // guard page.
@@ -36,6 +38,7 @@ proc_mapstacks(pagetable_t kpgtbl) {
     if(ka == 0)
       panic("kalloc");
     uint64 va = KSTACK((int) (p - proc));
+    printf("va %p ka %p\n", va, ka);
     kvmmap(kpgtbl, va, (uint64)V2P(ka), PGSIZE, PTE_NORMAL);
   }
 }
@@ -45,6 +48,9 @@ void
 procinit(void)
 {
   struct proc *p;
+
+  // map kernel stacks
+  proc_mapstacks(kernel_pagetable);
   
   initlock(&pid_lock, "nextpid");
   initlock(&wait_lock, "wait_lock");
@@ -93,6 +99,7 @@ static struct proc*
 allocproc(void)
 {
   struct proc *p;
+  char *sp;
 
   for(p = proc; p < &proc[NPROC]; p++) {
     acquire(&p->lock);
@@ -108,12 +115,11 @@ found:
   p->pid = allocpid();
   p->state = USED;
 
+  sp = (char*)p->kstack + PGSIZE;
+
   // Allocate a trapframe page.
-  if((p->trapframe = (struct trapframe *)kalloc()) == 0){
-    freeproc(p);
-    release(&p->lock);
-    return 0;
-  }
+  sp -= sizeof(*p->trapframe);
+  p->trapframe = (struct trapframe*)sp;
 
   // An empty user page table.
   p->pagetable = uvmcreate();
@@ -127,7 +133,7 @@ found:
   // which returns to user space.
   memset(&p->context, 0, sizeof(p->context));
   p->context.x30 = (uint64)forkret;
-  p->context.sp = p->kstack + PGSIZE;
+  p->context.sp = (uint64)sp;
 
   return p;
 }
@@ -458,10 +464,11 @@ void
 forkret(void)
 {
   static int first = 1;
-  struct trapframe *tf = myproc()->trapframe;
+  struct proc *p = myproc();
+  struct trapframe *tf = p->trapframe;
 
   // Still holding p->lock from scheduler.
-  release(&myproc()->lock);
+  release(&p->lock);
 
   if (first) {
     // File system initialization must be run in the context of a

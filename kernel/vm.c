@@ -39,9 +39,6 @@ kvmmake(void)
   // map kernel data and the physical RAM we'll make use of.
   kvmmap(kpgtbl, (uint64)etext, V2P(etext), (uint64)P2V(PHYSTOP)-(uint64)etext, PTE_NORMAL | PTE_XN);
 
-  // map kernel stacks
-  proc_mapstacks(kpgtbl);
-  
   return kpgtbl;
 }
 
@@ -70,9 +67,9 @@ kvminithart()
 // pages. A page-table page contains 512 64-bit PTEs.
 // A 64-bit virtual address is split into five fields:
 //   39..63 -- must be zero.
-//   30..38 -- 9 bits of level-2 index.
-//   21..29 -- 9 bits of level-1 index.
-//   12..20 -- 9 bits of level-0 index.
+//   30..38 -- 9 bits of level-1 index.
+//   21..29 -- 9 bits of level-2 index.
+//   12..20 -- 9 bits of level-3 index.
 //    0..11 -- 12 bits of byte offset within the page.
 pte_t *
 walk(pagetable_t pagetable, uint64 va, int alloc)
@@ -82,7 +79,7 @@ walk(pagetable_t pagetable, uint64 va, int alloc)
 
   for(int level = 1; level < 3; level++) {
     pte_t *pte = &pagetable[PX(level, va)];
-    if(*pte & PTE_TABLE) {
+    if((*pte & PTE_VALID) && (*pte & PTE_TABLE)) {
       pagetable = (pagetable_t)P2V(PTE2PA(*pte));
     } else {
       if(!alloc || (pagetable = (pde_t*)kalloc()) == 0)
@@ -150,6 +147,8 @@ mappages(pagetable_t pagetable, uint64 va, uint64 size, uint64 pa, uint64 perm)
 
   if(size == 0)
     panic("mappages: size");
+  if(pa >= PHYSTOP)
+    panic("pa");
   
   a = PGROUNDDOWN(va);
   last = PGROUNDDOWN(va + size - 1);
@@ -294,15 +293,15 @@ void
 freewalk(pagetable_t pagetable)
 {
   // there are 2^9 = 512 PTEs in a page table.
+  // printf("freeawlk %p\n", pagetable);
   for(int i = 0; i < 512; i++){
     pte_t pte = pagetable[i];
+    // printf("pte%p %d\n", pte, i);
     if((pte & PTE_VALID) && (pte & PTE_TABLE) && !(pte & PTE_AF)){
       // this PTE points to a lower-level page table.
       uint64 child = PTE2PA(pte);
       freewalk((pagetable_t)P2V(child));
       pagetable[i] = 0;
-    } else if(pte & PTE_AF){
-      panic("freewalk: leaf");
     }
   }
   kfree((void*)pagetable);
