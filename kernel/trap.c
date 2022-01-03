@@ -40,7 +40,6 @@ usertrap(void)
   
   uint64 ec = (r_esr_el1() >> 26) & 0x3f;
   if(ec == 21){
-    // svc
     // system call
 
     if(p->killed)
@@ -66,7 +65,7 @@ usertrap(void)
   if(which_dev == 2)
     yield();
 
-  // return to usertrapret in uservec.S
+  usertrapret(p->trapframe);
 }
 
 // interrupts and exceptions from kernel code go here via kernelvec,
@@ -121,14 +120,13 @@ devintr()
   } else if(irq == TIMER0_IRQ){
     timerintr();
     dev = 2;
-  } else if(irq == 1023) {
+  } else if(irq == 1023){
     // do nothing
-    dev = 0;
   } else if(irq){
     printf("unexpected interrupt irq=%d\n", irq);
   }
 
-  if(iar)
+  if(dev)
     gic_eoi(iar);
 
   return dev;
