@@ -64,8 +64,6 @@ usertrap(void)
   // give up the CPU if this is a timer interrupt.
   if(which_dev == 2)
     yield();
-
-  usertrapret(p->trapframe);
 }
 
 // interrupts and exceptions from kernel code go here via kernelvec,
@@ -118,6 +116,9 @@ devintr()
     virtio_disk_intr();
     dev = 1;
   } else if(irq == TIMER0_IRQ){
+    if(cpuid() == 0){
+      clockintr();
+    }
     timerintr();
     dev = 2;
   } else if(irq == 1023){
