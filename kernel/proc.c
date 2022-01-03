@@ -38,7 +38,6 @@ proc_mapstacks(pagetable_t kpgtbl) {
     if(ka == 0)
       panic("kalloc");
     uint64 va = KSTACK((int) (p - proc));
-    printf("va %p ka %p\n", va, ka);
     kvmmap(kpgtbl, va, (uint64)V2P(ka), PGSIZE, PTE_NORMAL);
   }
 }
@@ -144,8 +143,6 @@ found:
 static void
 freeproc(struct proc *p)
 {
-  if(p->trapframe)
-    kfree((void*)p->trapframe);
   p->trapframe = 0;
   if(p->pagetable)
     uvmfree(p->pagetable, p->sz);
