@@ -32,10 +32,7 @@ uservec:
         mov x0, sp
         bl usertrap
 
-.global usertrapret
-usertrapret:
-        mov sp, x0
-
+trapret:
         ldp x30, x9, [sp, #16 * 15]
         ldp x10, x11, [sp, #16 * 16]
 
@@ -62,3 +59,8 @@ usertrapret:
         add sp, sp, #272
 
         eret
+
+.global usertrapret
+usertrapret:
+        mov sp, x0
+        b trapret
