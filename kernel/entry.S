@@ -1,5 +1,8 @@
 #include "aarch64.h" 
 #include "memlayout.h"
+#include "param.h"
+
+#define  PSCI_CPUON   0xc4000003L
         // qemu -kernel loads the kernel at 0x40000000
         // and causes each CPU to jump there.
         // kernel.ld causes the following code to
@@ -13,6 +16,16 @@ _entry:
         b entryothers         // secondary
 
 entry:
+        // wakeup other processor
+        mov x1, 0
+wploop:
+        ldr x0, =PSCI_CPUON 
+        adrp x2, _entry
+        hvc #0
+        add x1, x1, 1
+        cmp x1, #NCPU
+        b.lt wploop
+
         // set up entry pagetable
         //
         // Phase 1.
@@ -26,6 +39,7 @@ entry:
         // memory type is normal.
 
         // Phase 1
+        // map [0x40000000,PA(end)) to [0x40000000,PA(end))
         adrp x0, l2entrypgt
 
         mov x1, #0x40000000
@@ -47,15 +61,16 @@ l2epgt_loop:
         adrp x0, l1entrypgt
 
         lsr x3, x1, #PXSHIFT(1)
-        and x3, x3, #PXMASK  /* start va level1 index */ 
+        and x3, x3, #PXMASK     // start va level1 index
 
-        mov x4, #(PTE_TABLE | PTE_VALID)  /* entry attr */
+        mov x4, #(PTE_TABLE | PTE_VALID)  // entry attr
         adrp x5, l2entrypgt
         orr x6, x4, x5    // table entry
 
-        str x6, [x0, x3, lsl #3]    /* l1entrypgt[l1idx] = table entry */
+        str x6, [x0, x3, lsl #3]    // l1entrypgt[l1idx] = table entry
 
         // Phase 2
+        // map [0xffffff8040000000,VA(end)) to [0x40000000,PA(end))
         adrp x0, l2kpgt
 
         mov x1, #0x40000000   // start pa
@@ -128,7 +143,7 @@ _start:
         mul x1, x1, x2
         add x0, x0, x1
         mov sp, x0
-        // jump to start() in start.c
+        // jump to main()
         b main
 
         b .   // spin
