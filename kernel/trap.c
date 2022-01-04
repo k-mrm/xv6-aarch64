@@ -74,6 +74,7 @@ kerneltrap()
 {
   int which_dev = 0;
   uint64 esr = r_esr_el1();
+  w_esr_el1(0);
   
   if(intr_get() != 0)
     panic("kerneltrap: interrupts enabled");

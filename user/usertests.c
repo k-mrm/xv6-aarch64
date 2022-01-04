@@ -821,20 +821,18 @@ preempt(char *s)
     printf("%s: fork failed", s);
     exit(1);
   }
-  if(pid1 == 0) {
+  if(pid1 == 0)
     for(;;)
       ;
-  }
 
   pid2 = fork();
   if(pid2 < 0) {
     printf("%s: fork failed\n", s);
     exit(1);
   }
-  if(pid2 == 0) {
+  if(pid2 == 0)
     for(;;)
       ;
-  }
 
   pipe(pfds);
   pid3 = fork();
