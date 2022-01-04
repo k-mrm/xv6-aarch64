@@ -121,6 +121,8 @@ uint64
 uva2ka(pagetable_t pagetable, uint64 va)
 {
   uint64 pa = walkaddr(pagetable, va);
+  if(pa == 0)
+    return 0;
 
   return (uint64)P2V(pa);
 }
