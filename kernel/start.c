@@ -3,7 +3,6 @@
 #include "memlayout.h"
 #include "aarch64.h"
 #include "defs.h"
-#include "psci.h"
 
 void _entry();
 void main();
@@ -17,10 +16,6 @@ __attribute__ ((aligned (16))) char stack0[4096 * NCPU];
 void
 start()
 {
-  // wakeup other cpu
-  for(int id = 1; id < NCPU; id++)
-    psci_cpuon(id, V2P(_entry));
-
   main();
 }
 
