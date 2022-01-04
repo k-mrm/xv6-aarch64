@@ -45,8 +45,6 @@ usertrap(void)
     if(p->killed)
       exit(-1);
 
-    // an interrupt will change sstatus &c registers,
-    // so don't enable until done with those registers.
     intr_on();
 
     syscall();

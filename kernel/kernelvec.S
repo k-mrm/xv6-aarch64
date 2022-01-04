@@ -40,7 +40,6 @@ kernelvec:
 
         msr elr_el1, x9
         msr spsr_el1, x10
-        msr sp_el0, x11
 
         ldp x0, x1, [sp, #16 * 0]
         ldp x2, x3, [sp, #16 * 1]
