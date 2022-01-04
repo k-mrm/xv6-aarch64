@@ -63,6 +63,12 @@ r_esr_el1()
   return x;
 }
 
+static inline void
+w_esr_el1(uint64 x)
+{
+  asm volatile("msr esr_el1, %0" : : "r" (x) );
+}
+
 static inline uint64
 r_elr_el1()
 {
@@ -128,14 +134,14 @@ r_cntfrq_el0()
 static inline void
 intr_on()
 {
-  asm volatile("msr daifclr, #0x2" ::: "memory");
+  asm volatile("msr daifclr, #0xf" ::: "memory");
 }
 
 // disable device interrupts(irq)
 static inline void
 intr_off()
 {
-  asm volatile("msr daifset, #0x2" ::: "memory");
+  asm volatile("msr daifset, #0xf" ::: "memory");
 }
 
 static inline uint64

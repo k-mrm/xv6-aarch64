@@ -20,7 +20,7 @@ trapinit(void)
   initlock(&tickslock, "time");
 }
 
-// set up to take exceptions and traps while in the kernel.
+// set up to take exceptions and traps.
 void
 trapinithart(void)
 {
@@ -37,8 +37,9 @@ usertrap(void)
   int which_dev = 0;
 
   struct proc *p = myproc();
-  
+
   uint64 ec = (r_esr_el1() >> 26) & 0x3f;
+  w_esr_el1(0);
   if(ec == 21){
     // system call
 
@@ -62,6 +63,8 @@ usertrap(void)
   // give up the CPU if this is a timer interrupt.
   if(which_dev == 2)
     yield();
+
+  intr_off();
 }
 
 // interrupts and exceptions from kernel code go here via kernelvec,

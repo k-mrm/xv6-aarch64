@@ -33,9 +33,6 @@ uservec:
         bl usertrap
 
 trapret:
-        // clear interrupt
-        msr daifset, #0x2 
-
         ldp x30, x9, [sp, #16 * 15]
         ldp x10, x11, [sp, #16 * 16]
 
