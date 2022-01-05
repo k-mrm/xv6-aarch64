@@ -26,6 +26,16 @@ wploop:
         cmp x1, #NCPU
         b.lt wploop
 
+        // clear .bss
+        adrp x1, bss_start
+        ldr w2, =bss_size
+1:
+        cbz w2, 2f
+        str xzr, [x1], #8
+        sub w2, w2, #1
+        b 1b
+2:
+
         // set up entry pagetable
         //
         // Phase 1.

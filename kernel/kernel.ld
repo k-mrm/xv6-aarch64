@@ -35,10 +35,15 @@ SECTIONS
 
   .bss : {
     . = ALIGN(16);
+    PROVIDE(bss_start = .);
     *(.sbss .sbss.*) /* do not need to distinguish this from .bss */
     . = ALIGN(16);
     *(.bss .bss.*)
+    . = ALIGN(16);
+    PROVIDE(bss_end = .);
   }
 
   PROVIDE(end = .);
 }
+
+bss_size = (bss_end - bss_start) >> 3;
