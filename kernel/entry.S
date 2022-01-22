@@ -11,7 +11,7 @@
 .global _entry
 _entry:
         mrs x1, mpidr_el1
-        and x1, x1, #3
+        and x1, x1, #0xff
         cbz x1, entry         // primary
         b entryothers         // secondary
 
