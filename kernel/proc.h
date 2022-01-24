@@ -3,17 +3,6 @@ struct context {
   uint64 sp;
 
   /* callee register */
-  uint64 x0;
-  uint64 x1;
-  uint64 x2;
-  uint64 x3;
-  uint64 x4;
-  uint64 x5;
-  uint64 x6;
-  uint64 x7;
-  uint64 x8;
-  uint64 x16;
-  uint64 x17;
   uint64 x18;
   uint64 x19;
   uint64 x20;

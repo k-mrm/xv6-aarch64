@@ -2,7 +2,7 @@
 #include "memlayout.h"
 #include "param.h"
 
-#define  PSCI_CPUON   0xc4000003L
+#define  PSCI_CPUON   0xc4000003
         // qemu -kernel loads the kernel at 0x40000000
         // and causes each CPU to jump there.
         // kernel.ld causes the following code to
@@ -11,13 +11,13 @@
 .global _entry
 _entry:
         mrs x1, mpidr_el1
-        and x1, x1, #0xf
+        and x1, x1, #0x3
         cbz x1, entry         // primary
         b entryothers         // secondary
 
 entry:
         // wakeup other processor
-        mov x1, 0
+        mov x1, 1
 wploop:
         ldr x0, =PSCI_CPUON 
         adrp x2, _entry
@@ -143,12 +143,12 @@ _start:
         // set up a stack for C.
         // stack0 is declared in start.c,
         // with a 4096-byte stack per CPU.
-        // sp = stack0 + (cpuid * 4096)
+        // sp = stack0 + ((cpuid+1) * 4096)
         // cpuid = mpidr_el1 & 0xff
         ldr x0, =stack0
         mov x1, #1024*4
         mrs x2, mpidr_el1
-        and x2, x2, #0xff
+        and x2, x2, #0x3
         add x2, x2, #1
         mul x1, x1, x2
         add x0, x0, x1
