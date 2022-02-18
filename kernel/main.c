@@ -4,8 +4,13 @@
 #include "aarch64.h"
 #include "defs.h"
 
+#define  PSCI_CPUON   0xc4000003
+
 volatile static int started = 0;
 extern char end[];  // first address after kernel loaded from ELF file
+
+void _entry(void);
+void psci_call(uint64 fn, int cpuid, uint64 entry, uint64 ctxid);
 
 // start() jumps here in EL1 on all CPUs.
 void
@@ -32,6 +37,8 @@ main()
     fileinit();      // file table
     virtio_disk_init(); // emulated hard disk
     userinit();      // first user process
+    for(int i = 1; i < NCPU; i++)   // wakeup other processors
+      psci_call(PSCI_CPUON, i, V2P(_entry), 0);
     __sync_synchronize();
     started = 1;
   } else {

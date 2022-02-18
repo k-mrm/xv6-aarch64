@@ -2,7 +2,6 @@
 #include "memlayout.h"
 #include "param.h"
 
-#define  PSCI_CPUON   0xc4000003
         // qemu -kernel loads the kernel at 0x40000000
         // and causes each CPU to jump there.
         // kernel.ld causes the following code to
@@ -16,16 +15,6 @@ _entry:
         b entryothers         // secondary
 
 entry:
-        // wakeup other processor
-        mov x1, 1
-wploop:
-        ldr x0, =PSCI_CPUON 
-        adrp x2, _entry
-        hvc #0
-        add x1, x1, 1
-        cmp x1, #NCPU
-        b.lt wploop
-
         // clear .bss
         adrp x1, bss_start
         ldr w2, =bss_size
@@ -157,3 +146,8 @@ _start:
         b main
 
         b .   // spin
+
+.global psci_call
+psci_call:
+        hvc #0
+        ret
