@@ -26,8 +26,6 @@ OBJS = \
   $K/exec.o \
   $K/sysfile.o \
   $K/trapasm.o \
-  $K/kernelvec.o \
-  $K/uservec.o \
   $K/timer.o \
   $K/virtio_disk.o \
   $K/gicv2.o \
@@ -54,7 +52,7 @@ LD = $(TOOLPREFIX)ld
 OBJCOPY = $(TOOLPREFIX)objcopy
 OBJDUMP = $(TOOLPREFIX)objdump
 
-CFLAGS = -Wall -Werror -Os -g3 -fno-omit-frame-pointer -mcpu=cortex-a72+nofp
+CFLAGS = -Wall -Werror -Os -fno-omit-frame-pointer -mcpu=cortex-a72+nofp
 CFLAGS += -MD
 CFLAGS += -ffreestanding -fno-common -nostdlib
 CFLAGS += -I.

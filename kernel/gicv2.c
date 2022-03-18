@@ -52,9 +52,12 @@ gicdinit()
 void
 gicv2init()
 {
-  gic_setup_ppi(TIMER0_IRQ);
+  // gicdinit();
+
   gic_setup_spi(UART0_IRQ);
   gic_setup_spi(VIRTIO0_IRQ);
+
+  // *RegD(D_CTLR) |= 0x1;
 }
 
 void
@@ -62,6 +65,8 @@ gicv2inithart()
 {
   giccinit();
   gicdinit();
+
+  gic_setup_ppi(TIMER0_IRQ);
 
   *RegC(C_CTLR) |= 0x1;
   *RegD(D_CTLR) |= 0x1;

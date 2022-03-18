@@ -17,6 +17,9 @@ void
 main()
 {
   if(cpuid() == 0){
+    for(int i = 1; i < NCPU; i++)   // wakeup other processors
+      psci_call(PSCI_CPUON, i, V2P(_entry), 0);
+    isb();
     kinit1(end, (void*)(KERNLINK+2*1024*1024));  // physical page allocator
     kvminit();       // create kernel page table
     kvminithart();   // turn on paging
@@ -37,8 +40,6 @@ main()
     fileinit();      // file table
     virtio_disk_init(); // emulated hard disk
     userinit();      // first user process
-    for(int i = 1; i < NCPU; i++)   // wakeup other processors
-      psci_call(PSCI_CPUON, i, V2P(_entry), 0);
     __sync_synchronize();
     started = 1;
   } else {

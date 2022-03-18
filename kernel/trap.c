@@ -31,11 +31,26 @@ trapinithart(void)
 // handle an interrupt, exception, or system call from user space.
 // called from uservec.S
 //
+
+void
+userirq(void)
+{
+  struct proc *p = myproc();
+
+  int which_dev = devintr();
+  // give up the CPU if this is a timer interrupt.
+  if(which_dev == 2)
+    yield();
+
+  if(p->killed)
+    exit(-1);
+
+  intr_off();
+}
+
 void
 usertrap(void)
 {
-  int which_dev = 0;
-
   struct proc *p = myproc();
 
   uint64 ec = (r_esr_el1() >> 26) & 0x3f;
@@ -49,8 +64,6 @@ usertrap(void)
     intr_on();
 
     syscall();
-  } else if((which_dev = devintr()) != 0){
-    // ok
   } else {
     printf("usertrap(): unexpected ec %p pid=%d\n", r_esr_el1(), p->pid);
     printf("            elr=%p far=%p\n", r_elr_el1(), r_far_el1());
@@ -60,35 +73,38 @@ usertrap(void)
   if(p->killed)
     exit(-1);
 
-  // give up the CPU if this is a timer interrupt.
-  if(which_dev == 2)
-    yield();
-
   intr_off();
 }
+
 
 // interrupts and exceptions from kernel code go here via kernelvec,
 // on whatever the current kernel stack is.
 void 
 kerneltrap()
 {
-  int which_dev = 0;
   uint64 esr = r_esr_el1();
   w_esr_el1(0);
   
   if(intr_get() != 0)
     panic("kerneltrap: interrupts enabled");
 
-  if((which_dev = devintr()) == 0){
-    printf("esr %p\n", esr);
-    printf("elr=%p far=%p\n", r_elr_el1(), r_far_el1());
-    panic("kerneltrap");
-  }
+  uint64 ec = (esr >> 26) & 0x3f;
+  uint64 iss = esr & 0x1ffffff;
+  printf("esr %p %p %p\n", esr, ec, iss);
+  printf("elr=%p far=%p\n", r_elr_el1(), r_far_el1());
+  panic("kerneltrap");
+}
+
+void
+kernelirq()
+{
+  int which_dev = devintr();
 
   // give up the CPU if this is a timer interrupt.
   if(which_dev == 2 && myproc() != 0 && myproc()->state == RUNNING)
     yield();
 }
+
 
 void
 clockintr()
