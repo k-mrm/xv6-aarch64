@@ -32,8 +32,8 @@ main()
     procinit();      // process table
     trapinit();      // trap vectors
     trapinithart();  // install trap vector
-    gicv2init();     // set up interrupt controller
-    gicv2inithart();
+    gicv3init();     // set up interrupt controller
+    gicv3inithart();
     timerinit();
     binit();         // buffer cache
     iinit();         // inode table
@@ -49,7 +49,7 @@ main()
     kvminithart();    // turn on paging
     printf("hart %d starting\n", cpuid());
     trapinithart();   // install trap vector
-    gicv2inithart();
+    gicv3inithart();
     timerinit();
   }
 

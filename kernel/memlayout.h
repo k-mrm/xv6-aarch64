@@ -41,8 +41,9 @@
 
 #define TIMER0_IRQ  27
 
-// interrupt controller GICv2
-#define GICV2 (KERNBASE + 0x08000000L)
+// interrupt controller GICv3
+#define GICV3         (KERNBASE + 0x08000000L)
+#define GICV3_REDIST  (KERNBASE + 0x080a0000L)
 
 // map kernel stacks beneath the trampoline,
 // each surrounded by invalid guard pages.

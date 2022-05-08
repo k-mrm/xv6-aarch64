@@ -28,7 +28,7 @@ OBJS = \
   $K/trapasm.o \
   $K/timer.o \
   $K/virtio_disk.o \
-  $K/gicv2.o \
+  $K/gicv3.o \
 
 # Try to infer the correct TOOLPREFIX if not set
 ifndef TOOLPREFIX
@@ -44,7 +44,8 @@ TOOLPREFIX := $(shell if aarch64-unknown-elf-objdump -i 2>&1 | grep 'elf64-big' 
 	echo "***" 1>&2; exit 1; fi)
 endif
 
-QEMU = qemu-system-aarch64
+#QEMUPREFIX = ~/qemu/build/
+QEMU = $(QEMUPREFIX)qemu-system-aarch64
 
 CC = $(TOOLPREFIX)gcc
 AS = $(TOOLPREFIX)gas
@@ -149,10 +150,10 @@ QEMUGDB = $(shell if $(QEMU) -help | grep -q '^-gdb'; \
 	then echo "-gdb tcp::$(GDBPORT)"; \
 	else echo "-s -p $(GDBPORT)"; fi)
 ifndef CPUS
-CPUS := 3
+CPUS := 1
 endif
 
-QEMUOPTS = -cpu cortex-a72 -machine virt,gic-version=2 -kernel $K/kernel -m 128M -smp $(CPUS) -nographic
+QEMUOPTS = -cpu cortex-a72 -machine virt,gic-version=3 -kernel $K/kernel -m 128M -smp $(CPUS) -nographic
 QEMUOPTS += -drive file=fs.img,if=none,format=raw,id=x0
 QEMUOPTS += -device virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0
 

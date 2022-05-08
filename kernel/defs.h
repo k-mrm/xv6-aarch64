@@ -172,9 +172,9 @@ int             copyinstr(pagetable_t, char *, uint64, uint64);
 void            switchuvm(struct proc *);
 void            switchkvm(void);
 
-// gicv2.c
-void            gicv2init(void);
-void            gicv2inithart(void);
+// gicv3.c
+void            gicv3init(void);
+void            gicv3inithart(void);
 uint32          gic_iar(void);
 int             gic_iar_irq(uint32);
 void            gic_eoi(uint32);
