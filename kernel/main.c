@@ -11,6 +11,7 @@ extern char end[];  // first address after kernel loaded from ELF file
 
 void _entry(void);
 void psci_call(uint64 fn, int cpuid, uint64 entry, uint64 ctxid);
+void delay(uint32 c);
 
 // start() jumps here in EL1 on all CPUs.
 void

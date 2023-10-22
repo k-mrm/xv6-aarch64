@@ -123,7 +123,7 @@ int
 devintr()
 {
   uint32 iar = gic_iar();
-  int irq = gic_iar_irq(iar);
+  uint32 irq = gic_iar_irq(iar);
   int dev = 0;
 
   // printf("devintr irq %d", irq);
@@ -145,8 +145,9 @@ devintr()
     printf("unexpected interrupt irq=%d\n", irq);
   }
 
-  if(dev)
+  if(dev) {
     gic_eoi(iar);
+  }
 
   return dev;
 }

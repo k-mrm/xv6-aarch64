@@ -51,6 +51,15 @@ reload_timer()
 }
 
 void
+delay(uint32 cycles)
+{
+  uint64 start = r_cntvct_el0();
+
+  while ((r_cntvct_el0() - start) < cycles)
+    asm volatile("yield" ::: "memory");
+}
+
+void
 timerintr()
 {
   disable_timer();

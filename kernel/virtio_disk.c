@@ -204,7 +204,7 @@ void
 virtio_disk_rw(struct buf *b, int write)
 {
   uint64 sector = b->blockno * (BSIZE / 512);
-
+  // char buf[1024];
   acquire(&disk.vdisk_lock);
 
   // the spec's Section 5.2 says that legacy block operations use
@@ -265,6 +265,11 @@ virtio_disk_rw(struct buf *b, int write)
   disk.avail->idx += 1; // not % NUM ...
 
   __sync_synchronize();
+
+  /*
+  for(int i = 0; i < 0x1000; i++)
+    printf("%x ", disk.pages[i]);
+    */
 
   *R(VIRTIO_MMIO_QUEUE_NOTIFY) = 0; // value is queue number
 

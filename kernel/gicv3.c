@@ -32,12 +32,12 @@
 #define R_ICFGR1         (SGI_BASE+0xc04)
 #define R_IGRPMODR0      (SGI_BASE+0xd00)
 
-static void gic_setup_ppi(uint32 cpuid, uint32 intid);
+static void gic_setup_ppi(uint32 cpuid, uint32 intid) __attribute__((unused));
 static void gic_setup_spi(uint32 intid);
 
 static struct {
   char *gicd;
-  char *rdist_addrs[1];
+  char *rdist_addrs[NCPU];
 } gicv3;
 
 static inline uint32
@@ -160,7 +160,7 @@ gicrinit(uint32 cpuid)
 static void
 gic_enable()
 {
-  gicd_write(D_CTLR, 3);
+  gicd_write(D_CTLR, (1<<1));
   w_icc_igrpen1_el1(1);
 }
 
@@ -168,7 +168,7 @@ void
 gicv3init()
 {
   gicv3.gicd = (char *)GICV3;
-  for(int i = 0; i < 1; i++) {
+  for(int i = 0; i < NCPU; i++) {
     gicv3.rdist_addrs[i] = (char *)(GICV3_REDIST + (i) * 0x20000);
   }
 
@@ -197,6 +197,13 @@ gic_enable_int(uint32 intid)
   uint32 is = gicd_read(D_ISENABLER(intid / 32));
   is |= 1 << (intid % 32);
   gicd_write(D_ISENABLER(intid / 32), is);
+}
+
+int
+gic_int_enabled(uint32 intid)
+{
+  uint32 is = gicd_read(D_ISENABLER(intid / 32));
+  return is & (1 << (intid % 32));
 }
 
 static void
